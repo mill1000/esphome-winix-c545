@@ -1,0 +1,49 @@
+esphome:
+  name: test-winix
+  friendly_name: test-winix
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+    
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "im/kouairPhWgPVYsBRgNvGuHq60/58kVwLWSJQ2NvM="
+
+ota:
+  password: "7167e338013ccaed31575c377c505ec6"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Test-Winix Fallback Hotspot"
+    password: "y33jBLyo918q"
+
+captive_portal:
+
+external_components:
+  # use all components from a local folder
+  - source:
+      type: local
+      path: components
+    components: [ winix_c545 ]
+
+uart:
+  tx_pin: 25
+  rx_pin: 26
+  baud_rate: 115200
+
+winix_c545:
+
+fan:
+  - platform: winix_c545
+    name: Winix C545 Air Purifier
