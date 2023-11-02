@@ -18,6 +18,19 @@ class WinixC545Component : public fan::Fan, public Component, public uart::UARTD
 
   fan::FanTraits get_traits() override;
 
+  // Functions for configuration
+  void set_aqi_sensor(sensor::Sensor *sensor) { this->aqi_sensor_ = sensor; }
+  void set_aqi_stoplight_sensor(sensor::Sensor *sensor);
+
+  void set_light_sensor(sensor::Sensor *sensor);
+
+  void set_filter_age_sensor(sensor::Sensor *sensor);
+
+  void set_plasmawave_switch(switch_::Switch *switch);
+  
+  void set_auto_switch(switch_::Switch *switch);
+  void set_sleep_switch(switch_::Switch *switch);
+
  protected:
   // Fan control
   void control(const fan::FanCall &call) override;
