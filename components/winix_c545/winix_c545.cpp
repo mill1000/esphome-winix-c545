@@ -72,12 +72,21 @@ void WinixC545Component::dump_config() {
   // TODO
 }
 
-fan::FanTraits WinixC545Fan::get_traits() {
+// void WinixC545Fan::setup() {
+//   // Restore state
+//   auto restore = this->restore_state_();
+//   if (restore.has_value()) {
+//     restore->apply(*this);
+//     this->write_state_();
+//   }
+// }
+
+fan::FanTraits WinixC545Component::get_traits() {
   // Only support speed control with 4 levels: Low, Med, High, Turbo
   return fan::FanTraits(false, true, false, 4);
 }
 
-void WinixC545Fan::control(const fan::FanCall &call) {
+void WinixC545Component::control(const fan::FanCall &call) {
   if (call.get_state().has_value()) this->state = *call.get_state();
 
   if (call.get_speed().has_value()) this->speed = *call.get_speed();
@@ -86,9 +95,10 @@ void WinixC545Fan::control(const fan::FanCall &call) {
   this->publish_state();
 }
 
-void WinixC545Fan::write_state_() {
+void WinixC545Component::write_state_() {
   // TODO write UART commands here
 }
+
 
 }  // namespace winix_c545
 }  // namespace esphome

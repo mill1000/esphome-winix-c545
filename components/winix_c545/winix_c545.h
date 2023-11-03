@@ -2,12 +2,9 @@
 
 #include <string>
 
-#include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
-
-#ifdef USE_FAN
 #include "esphome/components/fan/fan.h"
-#endif
+#include "esphome/components/uart/uart.h"
 #ifdef USE_SENSOR
 #include "esphome/components/sensor/sensor.h"
 #endif
@@ -18,31 +15,39 @@
 namespace esphome {
 namespace winix_c545 {
 
-class WinixC545Fan : public fan::Fan {
-  fan::FanTraits get_traits() override;
+// class WinixC545Fan : public fan::Fan {
+//  public:
+//   // void setup() override;
+//   // void loop() override;
+//   // void dump_config() override;
 
- protected:
-  // Fan control
-  void control(const fan::FanCall &call) override;
-  void write_state_();
-};
+//   fan::FanTraits get_traits() override;
 
-class WinixC545Component : public uart::UARTDevice, public Component {
+//  protected:
+//   // Fan control
+//   void control(const fan::FanCall &call) override;
+//   void write_state_();
+// };
+
+class WinixC545Component : public fan::Fan, public uart::UARTDevice, public Component {
+ #ifdef USE_SENSOR
+  SUB_SENSOR(filter_age)
+#endif
+
+ 
+ 
  public:
   void setup() override;
   void loop() override;
   void dump_config() override;
 
-#ifdef USE_FAN
-  void set_fan(fan::Fan *fan) { this->fan_ = fan; };
-#endif
+  fan::FanTraits get_traits() override;
 
 #ifdef USE_SENSOR
   // Functions for configuration
   void set_aqi_sensor(sensor::Sensor *sensor) { this->aqi_sensor_ = sensor; }
   void set_aqi_stoplight_sensor(sensor::Sensor *sensor);
   void set_light_sensor(sensor::Sensor *sensor);
-  void set_filter_age_sensor(sensor::Sensor *sensor);
 #endif
 
 #ifdef USE_SWITCH
@@ -55,17 +60,15 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   static constexpr uint32_t MAX_LINE_LENGTH = 255;
   bool readline_(char, char *, int);
 
-#ifdef USE_FAN
-  fan::Fan *fan_{nullptr};
-#endif
+  // Fan control
+  void control(const fan::FanCall &call) override;
+  void write_state_();
 
 #ifdef USE_SENSOR
   sensor::Sensor *aqi_sensor_{nullptr};
   sensor::Sensor *aqi_stoplight_sensor_{nullptr};
 
   sensor::Sensor *light_sensor_{nullptr};
-
-  sensor::Sensor *filter_age_sensor_{nullptr};
 #endif
 
 #ifdef USE_SWITCH
