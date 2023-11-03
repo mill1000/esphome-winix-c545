@@ -1,27 +1,38 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import fan
-from esphome.const import CONF_ID
+from esphome.components import fan, uart, sensor
+from esphome.const import CONF_ID, DEVICE_CLASS_DURATION, UNIT_HOUR, STATE_CLASS_MEASUREMENT
 
-from . import CONF_WINIX_C545_ID, WinixC545Component, winix_c545_ns
+AUTO_LOAD = ["sensor"]
+DEPENDENCIES = ["uart"]
 
-DEPENDENCIES = ["winix_c545"]
-
-WinixC545Fan = winix_c545_ns.class_("WinixC545Fan", fan.Fan, cg.Component)
+winix_c545_ns = cg.esphome_ns.namespace("winix_c545")
+WinixC545Component = winix_c545_ns.class_(
+    "WinixC545Component", fan.Fan, uart.UARTDevice, cg.Component)
 
 CONFIG_SCHEMA = (
     fan.FAN_SCHEMA.extend(
         {
-            cv.GenerateID(CONF_WINIX_C545_ID): cv.use_id(WinixC545Component),
-            cv.GenerateID(CONF_ID): cv.declare_id(WinixC545Fan),
+            cv.GenerateID(): cv.declare_id(WinixC545Component),
+            cv.Optional("filter_age"): sensor.sensor_schema(
+            unit_of_measurement=UNIT_HOUR,
+            accuracy_decimals=1,
+            device_class=DEVICE_CLASS_DURATION,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
         }
     )
+    .extend(uart.UART_DEVICE_SCHEMA)
+    .extend(cv.COMPONENT_SCHEMA)
 )
 
 
 async def to_code(config) -> None:
     var = cg.new_Pvariable(config[CONF_ID])
     await fan.register_fan(var, config)
+    await cg.register_component(var, config)
+    await uart.register_uart_device(var, config)
 
-    component = await cg.get_variable(config[CONF_WINIX_C545_ID])
-    cg.add(component.set_fan(var))
+    if "filter_age" in config:
+        sens = await sensor.new_sensor(config["filter_age"])
+        cg.add(var.set_filter_age_sensor(sens))

@@ -42,8 +42,9 @@ uart:
   rx_pin: 26
   baud_rate: 115200
 
-winix_c545:
-
 fan:
   - platform: winix_c545
     name: Winix C545 Air Purifier
+    filter_age:
+      name: Test
+
