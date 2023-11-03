@@ -47,3 +47,8 @@ winix_c545:
 fan:
   - platform: winix_c545
     name: Winix C545 Air Purifier
+
+sensor:
+  - platform: winix_c545
+    filter_age:
+      name: Test

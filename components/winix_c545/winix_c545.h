@@ -28,6 +28,10 @@ class WinixC545Fan : public fan::Fan {
 };
 
 class WinixC545Component : public uart::UARTDevice, public Component {
+#ifdef USE_SENSOR
+  SUB_SENSOR(filter_age)
+#endif
+
  public:
   void setup() override;
   void loop() override;
@@ -42,7 +46,6 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void set_aqi_sensor(sensor::Sensor *sensor) { this->aqi_sensor_ = sensor; }
   void set_aqi_stoplight_sensor(sensor::Sensor *sensor);
   void set_light_sensor(sensor::Sensor *sensor);
-  void set_filter_age_sensor(sensor::Sensor *sensor);
 #endif
 
 #ifdef USE_SWITCH
@@ -64,8 +67,6 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   sensor::Sensor *aqi_stoplight_sensor_{nullptr};
 
   sensor::Sensor *light_sensor_{nullptr};
-
-  sensor::Sensor *filter_age_sensor_{nullptr};
 #endif
 
 #ifdef USE_SWITCH
