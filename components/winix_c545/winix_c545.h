@@ -4,7 +4,6 @@
 
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
-
 #ifdef USE_FAN
 #include "esphome/components/fan/fan.h"
 #endif
@@ -30,6 +29,9 @@ class WinixC545Fan : public fan::Fan {
 class WinixC545Component : public uart::UARTDevice, public Component {
 #ifdef USE_SENSOR
   SUB_SENSOR(filter_age)
+  SUB_SENSOR(aqi)
+  SUB_SENSOR(aqi_stoplight)
+  SUB_SENSOR(light)
 #endif
 
  public:
@@ -39,13 +41,6 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 
 #ifdef USE_FAN
   void set_fan(fan::Fan *fan) { this->fan_ = fan; };
-#endif
-
-#ifdef USE_SENSOR
-  // Functions for configuration
-  void set_aqi_sensor(sensor::Sensor *sensor) { this->aqi_sensor_ = sensor; }
-  void set_aqi_stoplight_sensor(sensor::Sensor *sensor);
-  void set_light_sensor(sensor::Sensor *sensor);
 #endif
 
 #ifdef USE_SWITCH
@@ -62,15 +57,8 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   fan::Fan *fan_{nullptr};
 #endif
 
-#ifdef USE_SENSOR
-  sensor::Sensor *aqi_sensor_{nullptr};
-  sensor::Sensor *aqi_stoplight_sensor_{nullptr};
-
-  sensor::Sensor *light_sensor_{nullptr};
-#endif
-
 #ifdef USE_SWITCH
-  switch_::Switch *plasmawave_switch_ = {nullptr};
+  switch_::Switch *plasmawave_switch_{nullptr};
 
   // TODO the following belong as presets, not switches
   switch_::Switch *auto_switch_{nullptr};
