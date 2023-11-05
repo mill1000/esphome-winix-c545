@@ -51,7 +51,7 @@ bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
   return false;
 }
 
-void WinixC545Component::update_state_(const std::map<const std::string, uint16_t> &states) {
+void WinixC545Component::update_state_(const WinixStateMap &states) {
   for (const auto &state : states) {
     const std::string &key = state.first;
     const uint16_t value = state.second;
@@ -59,27 +59,19 @@ void WinixC545Component::update_state_(const std::map<const std::string, uint16_
     ESP_LOGD(TAG, "%s = %d", key.c_str(), value);
 
     // Handle sensor states and other non-fan states
-    if (key == "S07" && this->aqi_stoplight_sensor_ != nullptr)
-    {
+    if (key == "S07" && this->aqi_stoplight_sensor_ != nullptr) {
       // AQI stoplight
       this->aqi_stoplight_sensor_->publish_state(value);
-    }
-    else if (key == "S08" && this->aqi_sensor_ != nullptr)
-    {
+    } else if (key == "S08" && this->aqi_sensor_ != nullptr) {
       // AQI
       this->aqi_sensor_->publish_state(value);
-    }
-    else if (key == "S14" && this->light_sensor_ != nullptr)
-    {
+    } else if (key == "S14" && this->light_sensor_ != nullptr) {
       // Light
       this->light_sensor_->publish_state(value);
-    }
-    else if (key == "A21" && this->filter_age_sensor_ != nullptr)
-    {
+    } else if (key == "A21" && this->filter_age_sensor_ != nullptr) {
       // Filter age
       this->filter_age_sensor_->publish_state(value);
     }
-    
   }
 }
 
@@ -102,7 +94,7 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
       strncpy(payload, sentence + strlen("AWS_SEND=A2XX {"), MAX_LINE_LENGTH);
 
       // Construct map to hold updates
-      std::map<const std::string, uint16_t> states;
+      WinixStateMap states;
 
       // Parse each token into a KV pair
       char *token = strtok(payload, ",");
@@ -113,7 +105,7 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
           ESP_LOGE(TAG, "Failed to extract from token: %s", token);
           return;
         }
-        
+
         // Add token to map
         states.emplace(std::string(key), value);
 

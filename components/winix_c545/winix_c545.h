@@ -20,6 +20,9 @@ namespace winix_c545 {
 
 class WinixC545Component;
 
+// Define an alias for map of device states
+using WinixStateMap = std::map<const std::string, uint16_t>;
+
 class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
   fan::FanTraits get_traits() override {
     // Only support speed control with 4 levels: Low, Med, High, Turbo
@@ -62,7 +65,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   bool readline_(char, char *, int);
   void parse_sentence_(const char*);
   void parse_aws_sentence_(const char*);
-  void update_state_(const std::map<const std::string, uint16_t>&);
+  void update_state_(const WinixStateMap&);
   void write_sentence_(const char*);
 
 #ifdef USE_FAN
