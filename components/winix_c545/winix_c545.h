@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <map>
+#include <string>
 
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
@@ -57,7 +57,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void set_sleep_switch(switch_::Switch *switch);
 #endif
 
-  void write_sentence(const std::string&);
+  void write_sentence(const std::string &);
 
  protected:
   const std::string RX_PREFIX{"AT*ICT*"};
@@ -65,9 +65,9 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 
   static constexpr uint32_t MAX_LINE_LENGTH = 255;
   bool readline_(char, char *, int);
-  void parse_sentence_(const char*);
-  void parse_aws_sentence_(const char*);
-  void update_state_(const WinixStateMap&);
+  void parse_sentence_(const char *);
+  void parse_aws_sentence_(const char *);
+  void update_state_(const WinixStateMap &);
 
 #ifdef USE_FAN
   fan::Fan *fan_{nullptr};
