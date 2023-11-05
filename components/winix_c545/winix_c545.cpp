@@ -53,7 +53,7 @@ bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
 
 void WinixC545Component::update_state_(const std::map<const std::string, uint16_t> &states) {
   for (const auto &n : states) {
-    ESP_LOGE(TAG, "%s = %d", n.first, n.second);
+    ESP_LOGE(TAG, "%s = %d", n.first.c_str(), n.second);
   }
 }
 
@@ -71,26 +71,25 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
     {
       ESP_LOGI(TAG, "State update: %s", sentence);
 
-      // Creat a modifable copy of the message payload for tokenization
+      // Create a modifiable copy of the message payload for tokenization
       char payload[MAX_LINE_LENGTH] = {0};
-      strncpy(payload, sentence + strlen("AWS_SEND=A2XX "), MAX_LINE_LENGTH);
+      strncpy(payload, sentence + strlen("AWS_SEND=A2XX {"), MAX_LINE_LENGTH);
 
-      // AWS_SEND=A210 {"A02":"0","A03":"01","A04":"00","A05":"01","A07":"0","A21":"0","S07":"01","S08":"0","S14":"100"}
-      // AWS_SEND=A220 {"S07":"02","S08":"83","S14":"31"}
-
+      // Construct map to hold updates
       std::map<const std::string, uint16_t> states;
 
+      // Parse each token into a KV pair
       char *token = strtok(payload, ",");
       while (token != NULL) {
         char key[4] = {0};
-        uint16_t value = 0;
-        if (sscanf(token, "{\"%3s\":\"%d\"}", key, &value) != 2) {
+        uint32_t value = 0;
+        if (sscanf(token, "\"%3s\":\"%d\"", key, &value) != 2) {
           ESP_LOGE(TAG, "Failed to extract from token: %s", token);
           return;
         }
-
+        
         // Add token to map
-        states.emplace(key, value);
+        states.emplace(std::string(key), value);
 
         token = strtok(NULL, ",");
       }
@@ -172,8 +171,8 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   // Parse AWS sentences from MCU
   if (strncmp(sentence, "AWS_SEND", strlen("AWS_SEND")) == 0)
     this->parse_aws_sentence_(sentence);
-
-  ESP_LOGW(TAG, "Unsupported sentence: %s", sentence);
+  else
+    ESP_LOGW(TAG, "Unsupported sentence: %s", sentence);
 }
 
 void WinixC545Component::loop() {
