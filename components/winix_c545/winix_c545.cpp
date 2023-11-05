@@ -52,8 +52,34 @@ bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
 }
 
 void WinixC545Component::update_state_(const std::map<const std::string, uint16_t> &states) {
-  for (const auto &n : states) {
-    ESP_LOGE(TAG, "%s = %d", n.first.c_str(), n.second);
+  for (const auto &state : states) {
+    const std::string &key = state.first;
+    const uint16_t value = state.second;
+
+    ESP_LOGD(TAG, "%s = %d", key.c_str(), value);
+
+    // Handle sensor states and other non-fan states
+    if (key == "S07" && this->aqi_stoplight_sensor_ != nullptr)
+    {
+      // AQI stoplight
+      this->aqi_stoplight_sensor_->publish_state(value);
+    }
+    else if (key == "S08" && this->aqi_sensor_ != nullptr)
+    {
+      // AQI
+      this->aqi_sensor_->publish_state(value);
+    }
+    else if (key == "S14" && this->light_sensor_ != nullptr)
+    {
+      // Light
+      this->light_sensor_->publish_state(value);
+    }
+    else if (key == "A21" && this->filter_age_sensor_ != nullptr)
+    {
+      // Filter age
+      this->filter_age_sensor_->publish_state(value);
+    }
+    
   }
 }
 
