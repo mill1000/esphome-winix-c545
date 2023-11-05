@@ -56,4 +56,4 @@ async def to_code(config) -> None:
 
     if sensor_config := config.get(CONF_LIGHT):
         sens = await sensor.new_sensor(sensor_config)
-        cg.add(component.set_life_sensor(sens))
+        cg.add(component.set_light_sensor(sens))
