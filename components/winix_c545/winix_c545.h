@@ -18,11 +18,15 @@
 namespace esphome {
 namespace winix_c545 {
 
-class WinixC545Fan : public fan::Fan {
-  fan::FanTraits get_traits() override;
+class WinixC545Component;
+
+class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
+  fan::FanTraits get_traits() override {
+    // Only support speed control with 4 levels: Low, Med, High, Turbo
+    return fan::FanTraits(false, true, false, 4);
+  }
 
  protected:
-  // Fan control
   void control(const fan::FanCall &call) override;
   void write_state_();
 };

@@ -247,11 +247,6 @@ void WinixC545Component::setup() {
   // *ICT*AWS_IND:CONNECT OK
 }
 
-fan::FanTraits WinixC545Fan::get_traits() {
-  // Only support speed control with 4 levels: Low, Med, High, Turbo
-  return fan::FanTraits(false, true, false, 4);
-}
-
 void WinixC545Fan::control(const fan::FanCall &call) {
   if (call.get_state().has_value()) this->state = *call.get_state();
 

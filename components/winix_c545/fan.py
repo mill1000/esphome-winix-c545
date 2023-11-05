@@ -22,6 +22,7 @@ CONFIG_SCHEMA = (
 async def to_code(config) -> None:
     var = cg.new_Pvariable(config[CONF_ID])
     await fan.register_fan(var, config)
-
+    await cg.register_parented(var, config[CONF_WINIX_C545_ID])
+    
     component = await cg.get_variable(config[CONF_WINIX_C545_ID])
     cg.add(component.set_fan(var))
