@@ -50,8 +50,8 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 #endif
 
  protected:
-  const char* RX_PREFIX = "AT*ICT*";
-  const char* TX_PREFIX = "*ICT*";
+  const std::string RX_PREFIX{"AT*ICT*"};
+  const std::string TX_PREFIX{"*ICT*"};
 
   static constexpr uint32_t MAX_LINE_LENGTH = 255;
   bool readline_(char, char *, int);

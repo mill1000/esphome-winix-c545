@@ -36,10 +36,10 @@ void WinixC545Component::setup() {
 void WinixC545Component::write_sentence_(const char *sentence) {
   // Add TX prefix
   char buffer[MAX_LINE_LENGTH] = {0};
-  strncpy(buffer, TX_PREFIX, sizeof(TX_PREFIX));
+  strncpy(buffer, TX_PREFIX.c_str(), TX_PREFIX.size());
 
   // Copy sentence
-  strncpy(buffer, sentence, sizeof(buffer) - sizeof(TX_PREFIX));
+  strncpy(buffer, sentence, sizeof(buffer) - TX_PREFIX.size());
 
   // Send over UART
   ESP_LOGD(TAG, "Sending sentence: %s", buffer);
@@ -90,7 +90,7 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
 
       // Creat a modifable copy of the message payload for tokenization
       char payload[MAX_LINE_LENGTH] = {0};
-      strncpy(payload, sentence + sizeof("AWS_SEND=A2XX "), MAX_LINE_LENGTH);
+      strncpy(payload, sentence + strlen("AWS_SEND=A2XX "), MAX_LINE_LENGTH);
 
       // AWS_SEND=A210 {"A02":"0","A03":"01","A04":"00","A05":"01","A07":"0","A21":"0","S07":"01","S08":"0","S14":"100"}
       // AWS_SEND=A220 {"S07":"02","S08":"83","S14":"31"}
@@ -137,23 +137,23 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   // AT*ICT*AWS_SEND=A220 {"S07":"01","S08":"116","S14":"34"}
 
   // Ensure sentence starts as expected
-  if (strncmp(sentence, RX_PREFIX, sizeof(RX_PREFIX)) != 0) {
+  if (strncmp(sentence, RX_PREFIX.c_str(), RX_PREFIX.size()) != 0) {
     ESP_LOGW(TAG, "Received invalid sentence: %s", sentence);
     return;
   }
 
   // Advance past prefix
-  sentence += sizeof(RX_PREFIX);
+  sentence += RX_PREFIX.size();
 
   // Handle MCU_READY message
-  if (strncmp(sentence, "MCU_READY", sizeof("MCU_READY")) == 0) {
+  if (strncmp(sentence, "MCU_READY", strlen("MCU_READY")) == 0) {
     ESP_LOGI(TAG, "MCU_READY");
     this->write_sentence_("MCU_READY:OK");
     return;
   }
 
   // Handle MIB=32 message
-  if (strncmp(sentence, "MIB=32", sizeof("MIB=32")) == 0) {
+  if (strncmp(sentence, "MIB=32", strlen("MIB=32")) == 0) {
     ESP_LOGI(TAG, "MIB:OK");
     // 7595 is version of OEM wifi module
     this->write_sentence_("MIB:OK 7595");
@@ -161,21 +161,21 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   }
 
   // Handle SETMIB messages
-  if (strncmp(sentence, "SETMIB", sizeof("SETMIB")) == 0) {
+  if (strncmp(sentence, "SETMIB", strlen("SETMIB")) == 0) {
     ESP_LOGI(TAG, "SETMIB:OK");
     this->write_sentence_("SETMIB:OK");
     return;
   }
 
   // Handle SMODE messages
-  if (strncmp(sentence, "SMODE", sizeof("SMODE")) == 0) {
+  if (strncmp(sentence, "SMODE", strlen("SMODE")) == 0) {
     ESP_LOGI(TAG, "SMODE:OK");
     this->write_sentence_("SMODE:OK");
     return;
   }
 
   // Parse AWS sentences from MCU
-  if (strncmp(sentence, "AWS_SEND", sizeof("AWS_SEND")) == 0)
+  if (strncmp(sentence, "AWS_SEND", strlen("AWS_SEND")) == 0)
     this->parse_aws_sentence_(sentence);
 
   ESP_LOGW(TAG, "Unsupported sentence: %s", sentence);
