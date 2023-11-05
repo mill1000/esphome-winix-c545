@@ -10,32 +10,6 @@ namespace winix_c545 {
 
 static const char *const TAG = "winix_c545";
 
-// void WinixC545Component::on_plasmawave_state_(bool state) {
-//   // TODO Send uart command and update fan state if necessary
-// }
-
-void WinixC545Component::setup() {
-  // Restore state
-  // auto restore = this->restore_state_();
-  // if (restore.has_value()) {
-  //   restore->apply(*this);
-  //   this->write_state_();
-  // }
-
-  // TODO need to create switches first?? Switches
-  // this->plasmawave_switch_.add_on_state_callback(this->on_plasmawave_state_);
-
-  // Indicate device is ready
-  // TODO base on wifi state?
-  this->write_sentence_("DEVICEREADY");
-  // Some subset of these may be needed too
-  // *ICT*ASSOCIATED:0
-  // *ICT*IPALLOCATED:10.100.1.250 255.255.255.0 10.100.1.1 10.100.1.6
-  // *ICT*AWS_IND:MQTT OK
-  // *ICT*AWS_IND:SUBSCRIBE OK
-  // *ICT*AWS_IND:CONNECT OK
-}
-
 void WinixC545Component::write_sentence_(const char *sentence) {
   // Add TX prefix
   char buffer[MAX_LINE_LENGTH] = {0};
@@ -46,11 +20,11 @@ void WinixC545Component::write_sentence_(const char *sentence) {
 
   // Send over UART
   ESP_LOGD(TAG, "Sending sentence: %s", buffer);
-  this->write_str(buffer);
+  // this->write_str(buffer);
 }
 
-bool WinixC545Component::readline_(char data, char *buffer, int len) {
-  static int pos = 0;
+bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
+  static int position = 0;
 
   // Read failed
   if (data < 0) return false;
@@ -60,15 +34,15 @@ bool WinixC545Component::readline_(char data, char *buffer, int len) {
       break;
 
     case '\r': {  // Return on CR
-      int rpos = pos;
-      pos = 0;  // Reset position index ready for next time
-      return rpos;
+      int end = position;
+      position = 0;  // Reset position index ready for next time
+      return end;
     }
 
     default:
-      if (pos < len - 1) {
-        buffer[pos++] = data;
-        buffer[pos] = 0;
+      if (position < max_length - 1) {
+        buffer[position++] = data;
+        buffer[position] = 0;
       }
       break;
   }
@@ -141,7 +115,7 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
   }
 
   if (valid) {
-    // Acknoledge the message
+    // Acknowledge the message
     this->write_sentence_("AWS_SEND:OK");
     this->write_sentence_("AWS_IND:SEND OK");
   }
@@ -150,7 +124,7 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
 void WinixC545Component::parse_sentence_(const char *sentence) {
   ESP_LOGD(TAG, "Received sentence: %s", sentence);
 
-  // Example eentence formats
+  // Example sentence formats
   // AT*ICT*MCU_READY=1.2.0
   // AT*ICT*MIB=32
   // AT*ICT*SETMIB=18 C545
@@ -204,7 +178,6 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
 
 void WinixC545Component::loop() {
   static char buffer[MAX_LINE_LENGTH];
-  // TODO Read UART data here and publish values
 
   // TODO check available() against a min size?
   if (!this->available()) return;
@@ -214,13 +187,39 @@ void WinixC545Component::loop() {
     bool found = this->readline_(data, buffer, MAX_LINE_LENGTH);
     if (!found) continue;
 
-    // Complete line read
+    // Line received, parse it
     this->parse_sentence_(buffer);
   }
 }
 
 void WinixC545Component::dump_config() {
   // TODO
+}
+
+// void WinixC545Component::on_plasmawave_state_(bool state) {
+//   // TODO Send uart command and update fan state if necessary
+// }
+
+void WinixC545Component::setup() {
+  // Restore state
+  // auto restore = this->restore_state_();
+  // if (restore.has_value()) {
+  //   restore->apply(*this);
+  //   this->write_state_();
+  // }
+
+  // TODO need to create switches first?? Switches
+  // this->plasmawave_switch_.add_on_state_callback(this->on_plasmawave_state_);
+
+  // Indicate device is ready
+  // TODO base on wifi state?
+  this->write_sentence_("DEVICEREADY");
+  // Some subset of these may be needed too
+  // *ICT*ASSOCIATED:0
+  // *ICT*IPALLOCATED:10.100.1.250 255.255.255.0 10.100.1.1 10.100.1.6
+  // *ICT*AWS_IND:MQTT OK
+  // *ICT*AWS_IND:SUBSCRIBE OK
+  // *ICT*AWS_IND:CONNECT OK
 }
 
 fan::FanTraits WinixC545Fan::get_traits() {
