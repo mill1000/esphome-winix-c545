@@ -74,13 +74,55 @@ bool WinixC545Component::readline_(char data, char *buffer, int len) {
   return false;
 }
 
-
 void WinixC545Component::parse_aws_sentence_(const char *sentence) {
   uint16_t api_code = 0;
-  if (sscanf(sentence, "AWS_SEND=A%3d", &api_code) != 1)
-  {
+  if (sscanf(sentence, "AWS_SEND=A%3d", &api_code) != 1) {
     ESP_LOGE(TAG, "Failed to extract API code from sentence: %s", sentence);
     return;
+  }
+
+  bool valid = false;
+  switch (api_code) {
+    case 210:  // Overall device state
+    case 220:  // Sensor update
+    {
+      ESP_LOGI(TAG, "State update: %s", sentence);
+
+      // Creat a modifable copy of the message payload for tokenization
+      char payload[MAX_LINE_LENGTH] = {0};
+      strncpy(payload, sentence + sizeof("AWS_SEND=A2XX "), MAX_LINE_LENGTH);
+
+      // AWS_SEND=A210 {"A02":"0","A03":"01","A04":"00","A05":"01","A07":"0","A21":"0","S07":"01","S08":"0","S14":"100"}
+      // AWS_SEND=A220 {"S07":"02","S08":"83","S14":"31"}
+
+      char *token = strtok(payload, ",");
+      // sscanf(sentence, "AWS_SEND=A220 {\"S07\":\"%d\",\"S08\":\"%d\",\"S14\":\"%d\",}", &aqi_stoplight, &aqi, &light);
+
+      // uint16_t aqi_stoplight = 0;
+      // uint16_t aqi = 0;
+      // uint16_t light = 0;
+      // sscanf(sentence, "AWS_SEND=A220 {\"S07\":\"%d\",\"S08\":\"%d\",\"S14\":\"%d\",}", &aqi_stoplight, &aqi, &light);
+
+      break;
+    }
+
+    case 230:  // Error code
+    case 240:  // Version information
+    {
+      ESP_LOGI(TAG, "Misc update: %s", sentence);
+      valid = true;
+      break;
+    }
+
+    default:
+      ESP_LOGW(TAG, "Unknown API code %d: %s", api_code, sentence);
+      break;
+  }
+
+  if (valid) {
+    // Acknoledge the message
+    this->write_sentence_("AWS_SEND:OK");
+    this->write_sentence_("AWS_IND:SEND OK");
   }
 }
 
@@ -136,7 +178,7 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   if (strncmp(sentence, "AWS_SEND", sizeof("AWS_SEND")) == 0)
     this->parse_aws_sentence_(sentence);
 
-  ESP_LOGW(TAG, "Unsupported sentence: %s", sentence);  
+  ESP_LOGW(TAG, "Unsupported sentence: %s", sentence);
 }
 
 void WinixC545Component::loop() {
