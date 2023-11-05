@@ -50,8 +50,14 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 #endif
 
  protected:
+  const char* RX_PREFIX = "AT*ICT*";
+  const char* TX_PREFIX = "*ICT*";
+
   static constexpr uint32_t MAX_LINE_LENGTH = 255;
   bool readline_(char, char *, int);
+  void parse_sentence_(const char*);
+  void parse_aws_sentence_(const char*);
+  void write_sentence_(const char*);
 
 #ifdef USE_FAN
   fan::Fan *fan_{nullptr};
