@@ -10,17 +10,13 @@ namespace winix_c545 {
 
 static const char *const TAG = "winix_c545";
 
-void WinixC545Component::write_sentence_(const char *sentence) {
-  // Add TX prefix
-  char buffer[MAX_LINE_LENGTH] = {0};
-  strncpy(buffer, TX_PREFIX.c_str(), TX_PREFIX.size());
-
-  // Copy sentence
-  strncpy(buffer, sentence, sizeof(buffer) - TX_PREFIX.size());
+void WinixC545Component::write_sentence(const std::string &sentence) {
+  // Build complete command sentence
+  std::string tx_data = TX_PREFIX + sentence + "\r\n";
 
   // Send over UART
-  ESP_LOGD(TAG, "Sending sentence: %s", buffer);
-  // this->write_str(buffer);
+  ESP_LOGD(TAG, "Sending sentence: %s", tx_data.c_str());
+  this->write_str(tx_data.c_str());
 }
 
 bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
@@ -133,8 +129,8 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
 
   if (valid) {
     // Acknowledge the message
-    this->write_sentence_("AWS_SEND:OK");
-    this->write_sentence_("AWS_IND:SEND OK");
+    this->write_sentence("AWS_SEND:OK");
+    this->write_sentence("AWS_IND:SEND OK");
   }
 }
 
@@ -160,7 +156,7 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   // Handle MCU_READY message
   if (strncmp(sentence, "MCU_READY", strlen("MCU_READY")) == 0) {
     ESP_LOGI(TAG, "MCU_READY");
-    this->write_sentence_("MCU_READY:OK");
+    this->write_sentence("MCU_READY:OK");
     return;
   }
 
@@ -168,21 +164,21 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   if (strncmp(sentence, "MIB=32", strlen("MIB=32")) == 0) {
     ESP_LOGI(TAG, "MIB:OK");
     // 7595 is version of OEM wifi module
-    this->write_sentence_("MIB:OK 7595");
+    this->write_sentence("MIB:OK 7595");
     return;
   }
 
   // Handle SETMIB messages
   if (strncmp(sentence, "SETMIB", strlen("SETMIB")) == 0) {
     ESP_LOGI(TAG, "SETMIB:OK");
-    this->write_sentence_("SETMIB:OK");
+    this->write_sentence("SETMIB:OK");
     return;
   }
 
   // Handle SMODE messages
   if (strncmp(sentence, "SMODE", strlen("SMODE")) == 0) {
     ESP_LOGI(TAG, "SMODE:OK");
-    this->write_sentence_("SMODE:OK");
+    this->write_sentence("SMODE:OK");
     return;
   }
 
@@ -230,7 +226,7 @@ void WinixC545Component::setup() {
 
   // Indicate device is ready
   // TODO base on wifi state?
-  this->write_sentence_("DEVICEREADY");
+  this->write_sentence("DEVICEREADY");
   // Some subset of these may be needed too
   // *ICT*ASSOCIATED:0
   // *ICT*IPALLOCATED:10.100.1.250 255.255.255.0 10.100.1.1 10.100.1.6

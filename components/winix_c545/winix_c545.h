@@ -57,6 +57,8 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void set_sleep_switch(switch_::Switch *switch);
 #endif
 
+  void write_sentence(const std::string&);
+
  protected:
   const std::string RX_PREFIX{"AT*ICT*"};
   const std::string TX_PREFIX{"*ICT*"};
@@ -66,7 +68,6 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void parse_sentence_(const char*);
   void parse_aws_sentence_(const char*);
   void update_state_(const WinixStateMap&);
-  void write_sentence_(const char*);
 
 #ifdef USE_FAN
   fan::Fan *fan_{nullptr};
