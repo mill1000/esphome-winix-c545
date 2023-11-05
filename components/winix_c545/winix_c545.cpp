@@ -1,4 +1,7 @@
+
 #include "winix_c545.h"
+
+#include <map>
 
 #include "esphome/core/log.h"
 
@@ -74,6 +77,12 @@ bool WinixC545Component::readline_(char data, char *buffer, int len) {
   return false;
 }
 
+void WinixC545Component::update_state_(const std::map<const std::string, uint16_t> &states) {
+  for (const auto &n : states) {
+    ESP_LOGE(TAG, "%s = %d", n.first, n.second);
+  }
+}
+
 void WinixC545Component::parse_aws_sentence_(const char *sentence) {
   uint16_t api_code = 0;
   if (sscanf(sentence, "AWS_SEND=A%3d", &api_code) != 1) {
@@ -95,13 +104,25 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
       // AWS_SEND=A210 {"A02":"0","A03":"01","A04":"00","A05":"01","A07":"0","A21":"0","S07":"01","S08":"0","S14":"100"}
       // AWS_SEND=A220 {"S07":"02","S08":"83","S14":"31"}
 
-      char *token = strtok(payload, ",");
-      // sscanf(sentence, "AWS_SEND=A220 {\"S07\":\"%d\",\"S08\":\"%d\",\"S14\":\"%d\",}", &aqi_stoplight, &aqi, &light);
+      std::map<const std::string, uint16_t> states;
 
-      // uint16_t aqi_stoplight = 0;
-      // uint16_t aqi = 0;
-      // uint16_t light = 0;
-      // sscanf(sentence, "AWS_SEND=A220 {\"S07\":\"%d\",\"S08\":\"%d\",\"S14\":\"%d\",}", &aqi_stoplight, &aqi, &light);
+      char *token = strtok(payload, ",");
+      while (token != NULL) {
+        char key[4] = {0};
+        uint16_t value = 0;
+        if (sscanf(token, "{\"%3s\":\"%d\"}", key, &value) != 2) {
+          ESP_LOGE(TAG, "Failed to extract from token: %s", token);
+          return;
+        }
+
+        // Add token to map
+        states.emplace(key, value);
+
+        token = strtok(NULL, ",");
+      }
+
+      // Update internal state
+      this->update_state_(states);
 
       break;
     }

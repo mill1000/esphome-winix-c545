@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
@@ -57,6 +58,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   bool readline_(char, char *, int);
   void parse_sentence_(const char*);
   void parse_aws_sentence_(const char*);
+  void update_state_(const std::map<const std::string, uint16_t>&);
   void write_sentence_(const char*);
 
 #ifdef USE_FAN
