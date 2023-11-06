@@ -78,9 +78,14 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
     const uint16_t value = state.second;
 
     // Handle sensor states and other non-fan states
-    if (key == "S07" && this->aqi_indicator_sensor_ != nullptr) {
-      // AQI stoplight
-      this->aqi_indicator_sensor_->publish_state(value);
+    if (key == "S07" && this->aqi_indicator_text_sensor_ != nullptr) {
+      // AQI LED indicator
+      switch (value)
+      {
+        case 1: this->aqi_indicator_text_sensor_->publish_state("Good"); break;
+        case 2: this->aqi_indicator_text_sensor_->publish_state("Fair"); break;
+        case 3: this->aqi_indicator_text_sensor_->publish_state("Poor"); break;
+      }
     } else if (key == "S08" && this->aqi_sensor_ != nullptr) {
       // AQI
       this->aqi_sensor_->publish_state(value);

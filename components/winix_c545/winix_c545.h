@@ -11,6 +11,9 @@
 #ifdef USE_SENSOR
 #include "esphome/components/sensor/sensor.h"
 #endif
+#ifdef USE_TEXT_SENSOR
+#include "esphome/components/text_sensor/text_sensor.h"
+#endif
 #ifdef USE_SWITCH
 #include "esphome/components/switch/switch.h"
 #endif
@@ -68,8 +71,11 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 #ifdef USE_SENSOR
   SUB_SENSOR(filter_age)
   SUB_SENSOR(aqi)
-  SUB_SENSOR(aqi_indicator)
   SUB_SENSOR(light)
+#endif
+
+#ifdef USE_TEXT_SENSOR
+  SUB_TEXT_SENSOR(aqi_indicator)
 #endif
 
 #ifdef USE_SWITCH

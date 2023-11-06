@@ -9,7 +9,6 @@ from . import CONF_WINIX_C545_ID, WinixC545Component
 DEPENDENCIES = ["winix_c545"]
 
 CONF_AQI = "aqi"
-CONF_AQI_INDICATOR = "aqi_indicator"
 CONF_FILTER_AGE = "filter_age"
 CONF_LIGHT = "light"
 
@@ -25,11 +24,6 @@ CONFIG_SCHEMA = cv.Schema(
             unit_of_measurement=UNIT_EMPTY,
             accuracy_decimals=0,
             device_class=DEVICE_CLASS_AQI,
-        ),
-        cv.Optional(CONF_AQI_INDICATOR): sensor.sensor_schema(
-            unit_of_measurement=UNIT_EMPTY,
-            accuracy_decimals=0,
-            device_class=DEVICE_CLASS_AQI, # TODO Use ENUM instead?
         ),
         cv.Optional(CONF_LIGHT): sensor.sensor_schema(
             unit_of_measurement=UNIT_EMPTY,
@@ -49,10 +43,6 @@ async def to_code(config) -> None:
     if sensor_config := config.get(CONF_AQI):
         sens = await sensor.new_sensor(sensor_config)
         cg.add(component.set_aqi_sensor(sens))
-
-    if sensor_config := config.get(CONF_AQI_INDICATOR):
-        sens = await sensor.new_sensor(sensor_config)
-        cg.add(component.set_aqi_indicator_sensor(sens))
 
     if sensor_config := config.get(CONF_LIGHT):
         sens = await sensor.new_sensor(sensor_config)
