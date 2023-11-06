@@ -41,9 +41,8 @@ void WinixC545Component::write_state(const WinixStateMap &states) {
     sentence.append(buffer);
   }
 
-  // Remove final comma and insert end brace
-  sentence.pop_back();
-  sentence += "}";
+  // Replace final comma with an end brace
+  sentence.at(sentence.size() - 1) = '}';
 
   // Write sentence to device
   this->write_sentence_(sentence);
