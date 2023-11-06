@@ -61,6 +61,8 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void loop() override;
   void dump_config() override;
 
+  float get_setup_priority() const override { return setup_priority::AFTER_CONNECTION; }
+
   void write_state(const WinixStateMap &);
 
 #ifdef USE_FAN
