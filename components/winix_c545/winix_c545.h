@@ -31,7 +31,7 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
 
  protected:
   void control(const fan::FanCall &call) override;
-  void write_state_();
+  void write_aws_sentence_(const WinixStateMap &);
 };
 
 class WinixC545Component : public uart::UARTDevice, public Component {

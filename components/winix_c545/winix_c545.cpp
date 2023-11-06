@@ -235,17 +235,48 @@ void WinixC545Component::setup() {
   // *ICT*AWS_IND:CONNECT OK
 }
 
-void WinixC545Fan::control(const fan::FanCall &call) {
-  if (call.get_state().has_value()) this->state = *call.get_state();
+void WinixC545Fan::write_aws_sentence_(const WinixStateMap &states) {
+  // Nothing to do if empty
+  if (states.empty())
+    return;
 
-  if (call.get_speed().has_value()) this->speed = *call.get_speed();
+  std::string sentence = "AWS_RECV:A211 12 {";
 
-  this->write_state_();
-  this->publish_state();
+  for (const auto &state : states) {
+    const std::string &key = state.first;
+    const uint16_t value = state.second;
+
+    char buffer[32] = {0};
+    snprintf(buffer, sizeof(buffer), "\"%s\":\"%d\",", key.c_str(), value);
+
+    sentence += std::string(buffer);
+  }
+
+  // Remove final comma and insert end brace
+  sentence.pop_back();
+  sentence += "}";
+
+  // Write sentence to device
+  this->parent_->write_sentence(sentence);
 }
 
-void WinixC545Fan::write_state_() {
-  // TODO write UART commands here
+void WinixC545Fan::control(const fan::FanCall &call) {
+  std::map<const std::string, uint16_t> states;
+
+  if (call.get_state().has_value() && this->state != *call.get_state()) {
+    // State has changed
+    this->state = *call.get_state();
+    states.emplace("A02", state ? 1 : 0);
+  }
+
+  if (call.get_speed().has_value() && this->speed != *call.get_speed()) {
+    // Speed has changed
+    this->speed = *call.get_speed();
+    states.emplace("A04", this->speed == 4 ? 5 : this->speed);
+  }
+
+  this->write_aws_sentence_(states);
+  this->publish_state();
 }
 
 }  // namespace winix_c545
