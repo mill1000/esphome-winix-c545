@@ -90,6 +90,7 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
     return fan::FanTraits(false, true, false, 4);
   }
 
+  void dump_config();
   void update_state(const WinixStateMap &);
 
  protected:

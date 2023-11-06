@@ -253,7 +253,27 @@ void WinixC545Component::loop() {
 }
 
 void WinixC545Component::dump_config() {
-  // TODO
+  ESP_LOGCONFIG(TAG, "Winix C545:");
+
+#ifdef USE_FAN
+  if (this->fan_) this->fan_->dump_config();
+#endif
+
+#ifdef USE_SENSOR
+  LOG_SENSOR("  ", "Filter Age Sensor", this->filter_age_sensor_);
+  LOG_SENSOR("  ", "AQI Sensor", this->aqi_sensor_);
+  LOG_SENSOR("  ", "Light Sensor", this->light_sensor_);
+#endif
+
+#ifdef USE_TEXT_SENSOR
+  LOG_TEXT_SENSOR("  ", "AQI Indicator Text Sensor", this->aqi_indicator_text_sensor_);
+#endif
+
+#ifdef USE_SWITCH
+  LOG_SWITCH("  ", "Plasmawave Switch", this->plasmawave_switch_);
+  LOG_SWITCH("  ", "Auto Switch", this->auto_switch_);
+  LOG_SWITCH("  ", "Sleep Switch", this->sleep_switch_);
+#endif
 }
 
 // void WinixC545Component::on_plasmawave_state_(bool state) {
@@ -277,6 +297,12 @@ void WinixC545Component::setup() {
   // *ICT*AWS_IND:MQTT OK
   // *ICT*AWS_IND:SUBSCRIBE OK
   // *ICT*AWS_IND:CONNECT OK
+}
+
+void WinixC545Fan::dump_config() {
+#ifdef USE_FAN
+  LOG_FAN("  ", "Fan", this);
+#endif
 }
 
 void WinixC545Fan::update_state(const WinixStateMap &states) {
