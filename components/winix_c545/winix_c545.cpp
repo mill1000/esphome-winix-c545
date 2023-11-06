@@ -10,13 +10,38 @@ namespace winix_c545 {
 
 static const char *const TAG = "winix_c545";
 
-void WinixC545Component::write_sentence(const std::string &sentence) {
+void WinixC545Component::write_sentence_(const std::string &sentence) {
   // Build complete command sentence
   std::string tx_data = TX_PREFIX + sentence + "\r\n";
 
   // Send over UART
   ESP_LOGD(TAG, "Sending sentence: %s", tx_data.c_str());
   this->write_str(tx_data.c_str());
+}
+
+void WinixC545Component::write_state(const WinixStateMap &states) {
+  // Nothing to do if empty
+  if (states.empty())
+    return;
+
+  std::string sentence = "AWS_RECV:A211 12 {";
+
+  for (const auto &state : states) {
+    const std::string &key = state.first;
+    const uint16_t value = state.second;
+
+    char buffer[32] = {0};
+    snprintf(buffer, sizeof(buffer), "\"%s\":\"%d\",", key.c_str(), value);
+
+    sentence += std::string(buffer);
+  }
+
+  // Remove final comma and insert end brace
+  sentence.pop_back();
+  sentence += "}";
+
+  // Write sentence to device
+  this->write_sentence_(sentence);
 }
 
 bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
@@ -132,8 +157,8 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
 
   if (valid) {
     // Acknowledge the message
-    this->write_sentence("AWS_SEND:OK");
-    this->write_sentence("AWS_IND:SEND OK");
+    this->write_sentence_("AWS_SEND:OK");
+    this->write_sentence_("AWS_IND:SEND OK");
   }
 }
 
@@ -159,7 +184,7 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   // Handle MCU_READY message
   if (strncmp(sentence, "MCU_READY", strlen("MCU_READY")) == 0) {
     ESP_LOGI(TAG, "MCU_READY");
-    this->write_sentence("MCU_READY:OK");
+    this->write_sentence_("MCU_READY:OK");
     return;
   }
 
@@ -167,21 +192,21 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   if (strncmp(sentence, "MIB=32", strlen("MIB=32")) == 0) {
     ESP_LOGI(TAG, "MIB:OK");
     // 7595 is version of OEM wifi module
-    this->write_sentence("MIB:OK 7595");
+    this->write_sentence_("MIB:OK 7595");
     return;
   }
 
   // Handle SETMIB messages
   if (strncmp(sentence, "SETMIB", strlen("SETMIB")) == 0) {
     ESP_LOGI(TAG, "SETMIB:OK");
-    this->write_sentence("SETMIB:OK");
+    this->write_sentence_("SETMIB:OK");
     return;
   }
 
   // Handle SMODE messages
   if (strncmp(sentence, "SMODE", strlen("SMODE")) == 0) {
     ESP_LOGI(TAG, "SMODE:OK");
-    this->write_sentence("SMODE:OK");
+    this->write_sentence_("SMODE:OK");
     return;
   }
 
@@ -229,7 +254,7 @@ void WinixC545Component::setup() {
 
   // Indicate device is ready
   // TODO base on wifi state?
-  this->write_sentence("DEVICEREADY");
+  this->write_sentence_("DEVICEREADY");
   // Some subset of these may be needed too
   // *ICT*ASSOCIATED:0
   // *ICT*IPALLOCATED:10.100.1.250 255.255.255.0 10.100.1.1 10.100.1.6
@@ -271,31 +296,6 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
   this->publish_state();
 }
 
-void WinixC545Fan::write_aws_sentence_(const WinixStateMap &states) {
-  // Nothing to do if empty
-  if (states.empty())
-    return;
-
-  std::string sentence = "AWS_RECV:A211 12 {";
-
-  for (const auto &state : states) {
-    const std::string &key = state.first;
-    const uint16_t value = state.second;
-
-    char buffer[32] = {0};
-    snprintf(buffer, sizeof(buffer), "\"%s\":\"%d\",", key.c_str(), value);
-
-    sentence += std::string(buffer);
-  }
-
-  // Remove final comma and insert end brace
-  sentence.pop_back();
-  sentence += "}";
-
-  // Write sentence to device
-  this->parent_->write_sentence(sentence);
-}
-
 void WinixC545Fan::control(const fan::FanCall &call) {
   std::map<const std::string, uint16_t> states;
 
@@ -311,7 +311,7 @@ void WinixC545Fan::control(const fan::FanCall &call) {
     states.emplace("A04", this->speed == 4 ? 5 : this->speed);
   }
 
-  this->write_aws_sentence_(states);
+  this->parent_->write_state(states);
   this->publish_state();
 }
 

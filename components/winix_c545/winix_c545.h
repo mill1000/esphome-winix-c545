@@ -34,7 +34,6 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
 
  protected:
   void control(const fan::FanCall &call) override;
-  void write_aws_sentence_(const WinixStateMap &);
 };
 
 class WinixC545Component : public uart::UARTDevice, public Component {
@@ -50,6 +49,8 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void loop() override;
   void dump_config() override;
 
+  void write_state(const WinixStateMap &);
+
 #ifdef USE_FAN
   void set_fan(WinixC545Fan *fan) { this->fan_ = fan; };
 #endif
@@ -60,7 +61,6 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void set_sleep_switch(switch_::Switch *switch);
 #endif
 
-  void write_sentence(const std::string &);
 
  protected:
   const std::string RX_PREFIX{"AT*ICT*"};
@@ -71,6 +71,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void parse_sentence_(const char *);
   void parse_aws_sentence_(const char *);
   void update_state_(const WinixStateMap &);
+  void write_sentence_(const std::string &);
 
 #ifdef USE_FAN
   WinixC545Fan *fan_{nullptr};
