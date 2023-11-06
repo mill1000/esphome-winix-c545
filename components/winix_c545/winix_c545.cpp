@@ -246,17 +246,16 @@ bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
     case '\n':  // Ignore new-lines
       break;
 
-    case '\r': {  // Return on CR
-      int end = position;
-      position = 0;  // Reset position index ready for next time
-      return end;
+    case '\r': {             // Return on CR
+      buffer[position] = 0;  // Ensure buffer is null terminated
+      position = 0;          // Reset position for next line
+      return true;
     }
 
     default:
-      if (position < max_length - 1) {
+      if (position < max_length - 1)
         buffer[position++] = data;
-        buffer[position] = 0;
-      }
+
       break;
   }
 
