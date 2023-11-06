@@ -172,6 +172,12 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
   // Advance past prefix
   sentence += RX_PREFIX.size();
 
+  // Parse AWS sentences from MCU
+  if (strncmp(sentence, "AWS_SEND", strlen("AWS_SEND")) == 0) {
+    this->parse_aws_sentence_(sentence);
+    return;
+  }
+
   // Handle MCU_READY message
   if (strncmp(sentence, "MCU_READY", strlen("MCU_READY")) == 0) {
     ESP_LOGI(TAG, "MCU_READY");
@@ -201,11 +207,7 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
     return;
   }
 
-  // Parse AWS sentences from MCU
-  if (strncmp(sentence, "AWS_SEND", strlen("AWS_SEND")) == 0)
-    this->parse_aws_sentence_(sentence);
-  else
-    ESP_LOGW(TAG, "Unsupported sentence: %s", sentence);
+  ESP_LOGW(TAG, "Unsupported sentence: %s", sentence);
 }
 
 bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
