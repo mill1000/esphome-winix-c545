@@ -1,8 +1,8 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import sensor
-from esphome.const import (DEVICE_CLASS_AQI, DEVICE_CLASS_DURATION, UNIT_EMPTY,
-                           UNIT_HOUR, STATE_CLASS_MEASUREMENT)
+from esphome.const import (DEVICE_CLASS_AQI, DEVICE_CLASS_DURATION,
+                           STATE_CLASS_MEASUREMENT, UNIT_EMPTY, UNIT_HOUR)
 
 from . import CONF_WINIX_C545_ID, WinixC545Component
 
