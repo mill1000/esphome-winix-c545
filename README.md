@@ -83,7 +83,7 @@ sensor:
 text_sensor:
   - platform: winix_c545
     aqi_indicator:
-    name: AQI Indicator
+      name: AQI Indicator
 
 switch:
   - platform: winix_c545
