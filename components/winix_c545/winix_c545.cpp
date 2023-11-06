@@ -78,9 +78,9 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
     const uint16_t value = state.second;
 
     // Handle sensor states and other non-fan states
-    if (key == "S07" && this->aqi_stoplight_sensor_ != nullptr) {
+    if (key == "S07" && this->aqi_indicator_sensor_ != nullptr) {
       // AQI stoplight
-      this->aqi_stoplight_sensor_->publish_state(value);
+      this->aqi_indicator_sensor_->publish_state(value);
     } else if (key == "S08" && this->aqi_sensor_ != nullptr) {
       // AQI
       this->aqi_sensor_->publish_state(value);
@@ -232,7 +232,7 @@ void WinixC545Component::loop() {
   // TODO check available() against a min size?
   if (!this->available()) return;
 
-  while (this->available()) {
+  while (this->available() > 0) {
     char data = this->read();
     bool found = this->readline_(data, buffer, MAX_LINE_LENGTH);
     if (!found) continue;

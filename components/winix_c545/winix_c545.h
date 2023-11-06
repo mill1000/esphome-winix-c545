@@ -68,7 +68,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 #ifdef USE_SENSOR
   SUB_SENSOR(filter_age)
   SUB_SENSOR(aqi)
-  SUB_SENSOR(aqi_stoplight)
+  SUB_SENSOR(aqi_indicator)
   SUB_SENSOR(light)
 #endif
 
