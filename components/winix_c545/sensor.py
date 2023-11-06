@@ -1,8 +1,8 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import sensor
-from esphome.const import DEVICE_CLASS_DURATION, UNIT_HOUR, UNIT_EMPTY, DEVICE_CLASS_AQI
-
+from esphome.const import (DEVICE_CLASS_AQI, DEVICE_CLASS_DURATION, UNIT_EMPTY,
+                           UNIT_HOUR)
 
 from . import CONF_WINIX_C545_ID, WinixC545Component
 
@@ -34,7 +34,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_LIGHT): sensor.sensor_schema(
             unit_of_measurement=UNIT_EMPTY,
             accuracy_decimals=0
-        ),
+        )
     }
 )
 
