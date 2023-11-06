@@ -90,6 +90,15 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
     } else if (key == "A21" && this->filter_age_sensor_ != nullptr) {
       // Filter age
       this->filter_age_sensor_->publish_state(value);
+    } else if (key == "A07") {
+      // Plasmawave
+      this->plasmawave_switch_->publish_state(value == 1);
+    } else if (key == "A03") {
+      // Auto
+      this->auto_switch_->publish_state(value == 1);
+    } else if (key == "A04") {
+      // Sleep is a speed value
+      this->sleep_switch_->publish_state(value == 6);
     }
   }
 
@@ -276,9 +285,6 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
     if (key == "A02") {
       // Power on/off
       this->state = value == 1 ? true : false;
-    } else if (key == "A03") {
-      // Auto
-      // TODO Not in fan anyway?
     } else if (key == "A04") {
       // Speed
       if (value == 5)  // Turbo
@@ -287,9 +293,6 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
         this->speed = 0;    // TODO?
       else
         this->speed = value;
-    } else if (key == "A07") {
-      // Plasmawave
-      // TODO not in fan
     }
   }
 
@@ -313,6 +316,18 @@ void WinixC545Fan::control(const fan::FanCall &call) {
 
   this->parent_->write_state(states);
   this->publish_state();
+}
+
+void WinixC545Switch::write_state(bool state) {
+  std::map<const std::string, uint16_t> states;
+
+  if (state != this->state) {
+    // State has changed
+    states.emplace(this->key_, state ? this->on_value_ : this->off_value_);
+  }
+
+  this->parent_->write_state(states);
+  this->publish_state(state);
 }
 
 }  // namespace winix_c545

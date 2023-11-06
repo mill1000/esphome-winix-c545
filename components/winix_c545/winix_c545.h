@@ -23,6 +23,34 @@ class WinixC545Component;
 // Define an alias for map of device states
 using WinixStateMap = std::map<const std::string, uint16_t>;
 
+class WinixC545Switch : public switch_::Switch, public Parented<WinixC545Component> {
+ public:
+  WinixC545Switch(const std::string &key, uint8_t on_value = 1, uint8_t off_value = 0) : key_(key), on_value_(on_value), off_value_(off_value) {}
+
+ protected:
+  void write_state(bool state) override;
+
+  const std::string key_;
+  const uint8_t on_value_;
+  const uint8_t off_value_;
+};
+
+class WinixC545PlasmawaveSwitch : public WinixC545Switch {
+ public:
+  WinixC545PlasmawaveSwitch() : WinixC545Switch("A07") {}
+};
+
+class WinixC545AutoSwitch : public WinixC545Switch {
+ public:
+  WinixC545AutoSwitch() : WinixC545Switch("A03", 1, 2) {}
+};
+
+class WinixC545SleepSwitch : public WinixC545Switch {
+ public:
+  // Sleep switch operates on fan speed, switch to low when turned off
+  WinixC545SleepSwitch() : WinixC545Switch("A04", 6, 1) {}
+};
+
 class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
  public:
   fan::FanTraits get_traits() override {
@@ -44,6 +72,13 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   SUB_SENSOR(light)
 #endif
 
+#ifdef USE_SWITCH
+  SUB_SWITCH(plasmawave)
+  // TODO the following belong as presets, not switches
+  SUB_SWITCH(auto)
+  SUB_SWITCH(sleep)
+#endif
+
  public:
   void setup() override;
   void loop() override;
@@ -54,13 +89,6 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 #ifdef USE_FAN
   void set_fan(WinixC545Fan *fan) { this->fan_ = fan; };
 #endif
-
-#ifdef USE_SWITCH
-  void set_plasmawave_switch(switch_::Switch *switch);
-  void set_auto_switch(switch_::Switch *switch);
-  void set_sleep_switch(switch_::Switch *switch);
-#endif
-
 
  protected:
   const std::string RX_PREFIX{"AT*ICT*"};
@@ -75,14 +103,6 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 
 #ifdef USE_FAN
   WinixC545Fan *fan_{nullptr};
-#endif
-
-#ifdef USE_SWITCH
-  switch_::Switch *plasmawave_switch_{nullptr};
-
-  // TODO the following belong as presets, not switches
-  switch_::Switch *auto_switch_{nullptr};
-  switch_::Switch *sleep_switch_{nullptr};
 #endif
 };
 
