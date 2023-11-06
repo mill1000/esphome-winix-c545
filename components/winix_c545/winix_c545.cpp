@@ -33,7 +33,7 @@ void WinixC545Component::write_state(const WinixStateMap &states) {
     char buffer[16];
     snprintf(buffer, sizeof(buffer), "\"%s\":\"%d\",", key.c_str(), value);
 
-    sentence += std::string(buffer);
+    sentence.append(buffer);
   }
 
   // Remove final comma and insert end brace
