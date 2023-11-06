@@ -24,7 +24,7 @@ jobs:
     - run: autopep8 --diff --exit-code $(git ls-files '*.py')
     - run: isort --diff --check $(git ls-files '*.py')
 
-  clang-format:
+  check-clang-format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
