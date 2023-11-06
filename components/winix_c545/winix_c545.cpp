@@ -44,34 +44,6 @@ void WinixC545Component::write_state(const WinixStateMap &states) {
   this->write_sentence_(sentence);
 }
 
-bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
-  static int position = 0;
-
-  // Read failed
-  if (data < 0) return false;
-
-  switch (data) {
-    case '\n':  // Ignore new-lines
-      break;
-
-    case '\r': {  // Return on CR
-      int end = position;
-      position = 0;  // Reset position index ready for next time
-      return end;
-    }
-
-    default:
-      if (position < max_length - 1) {
-        buffer[position++] = data;
-        buffer[position] = 0;
-      }
-      break;
-  }
-
-  // No end of line has been found
-  return false;
-}
-
 void WinixC545Component::update_state_(const WinixStateMap &states) {
   for (const auto &state : states) {
     const std::string &key = state.first;
@@ -236,6 +208,34 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
     ESP_LOGW(TAG, "Unsupported sentence: %s", sentence);
 }
 
+bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
+  static int position = 0;
+
+  // Read failed
+  if (data < 0) return false;
+
+  switch (data) {
+    case '\n':  // Ignore new-lines
+      break;
+
+    case '\r': {  // Return on CR
+      int end = position;
+      position = 0;  // Reset position index ready for next time
+      return end;
+    }
+
+    default:
+      if (position < max_length - 1) {
+        buffer[position++] = data;
+        buffer[position] = 0;
+      }
+      break;
+  }
+
+  // No end of line has been found
+  return false;
+}
+
 void WinixC545Component::loop() {
   static char buffer[MAX_LINE_LENGTH];
 
@@ -275,10 +275,6 @@ void WinixC545Component::dump_config() {
   LOG_SWITCH("  ", "Sleep Switch", this->sleep_switch_);
 #endif
 }
-
-// void WinixC545Component::on_plasmawave_state_(bool state) {
-//   // TODO Send uart command and update fan state if necessary
-// }
 
 void WinixC545Component::setup() {
   // Restore state
