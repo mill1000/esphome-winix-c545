@@ -24,10 +24,13 @@ class WinixC545Component;
 using WinixStateMap = std::map<const std::string, uint16_t>;
 
 class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
+ public:
   fan::FanTraits get_traits() override {
     // Only support speed control with 4 levels: Low, Med, High, Turbo
     return fan::FanTraits(false, true, false, 4);
   }
+
+  void update_state(const WinixStateMap &);
 
  protected:
   void control(const fan::FanCall &call) override;
@@ -48,7 +51,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void dump_config() override;
 
 #ifdef USE_FAN
-  void set_fan(fan::Fan *fan) { this->fan_ = fan; };
+  void set_fan(WinixC545Fan *fan) { this->fan_ = fan; };
 #endif
 
 #ifdef USE_SWITCH
@@ -70,7 +73,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   void update_state_(const WinixStateMap &);
 
 #ifdef USE_FAN
-  fan::Fan *fan_{nullptr};
+  WinixC545Fan *fan_{nullptr};
 #endif
 
 #ifdef USE_SWITCH

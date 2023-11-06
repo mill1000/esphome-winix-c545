@@ -52,8 +52,6 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
     const std::string &key = state.first;
     const uint16_t value = state.second;
 
-    ESP_LOGD(TAG, "%s = %d", key.c_str(), value);
-
     // Handle sensor states and other non-fan states
     if (key == "S07" && this->aqi_stoplight_sensor_ != nullptr) {
       // AQI stoplight
@@ -68,6 +66,11 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
       // Filter age
       this->filter_age_sensor_->publish_state(value);
     }
+  }
+
+  // Pass states to underlying fan if it exists
+  if (this->fan_ != nullptr) {
+    this->fan_->update_state(states);
   }
 }
 
@@ -233,6 +236,39 @@ void WinixC545Component::setup() {
   // *ICT*AWS_IND:MQTT OK
   // *ICT*AWS_IND:SUBSCRIBE OK
   // *ICT*AWS_IND:CONNECT OK
+}
+
+void WinixC545Fan::update_state(const WinixStateMap &states) {
+  // Nothing to do if empty
+  if (states.empty())
+    return;
+
+  for (const auto &state : states) {
+    const std::string &key = state.first;
+    const uint16_t value = state.second;
+
+    // Handle fan states
+    if (key == "A02") {
+      // Power on/off
+      this->state = value == 1 ? true : false;
+    } else if (key == "A03") {
+      // Auto
+      // TODO Not in fan anyway?
+    } else if (key == "A04") {
+      // Speed
+      if (value == 5)  // Turbo
+        this->speed = 4;
+      else if (value == 6)  // Sleep
+        this->speed = 0;    // TODO?
+      else
+        this->speed = value;
+    } else if (key == "A07") {
+      // Plasmawave
+      // TODO not in fan
+    }
+  }
+
+  this->publish_state();
 }
 
 void WinixC545Fan::write_aws_sentence_(const WinixStateMap &states) {
