@@ -11,12 +11,12 @@ namespace winix_c545 {
 static const char *const TAG = "winix_c545";
 
 void WinixC545Component::write_sentence_(const std::string &sentence) {
-  // Build complete command sentence
-  std::string tx_data = TX_PREFIX + sentence + "\r\n";
+  ESP_LOGD(TAG, "Sending sentence: %s%s", TX_PREFIX.c_str(), sentence.c_str());
 
   // Send over UART
-  ESP_LOGD(TAG, "Sending sentence: %s", tx_data.c_str());
-  this->write_str(tx_data.c_str());
+  this->write_str(TX_PREFIX.c_str());
+  this->write_str(sentence.c_str());
+  this->write_str("\r\n");
 }
 
 void WinixC545Component::write_state(const WinixStateMap &states) {
