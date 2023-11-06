@@ -21,51 +21,22 @@
 namespace esphome {
 namespace winix_c545 {
 
-class WinixC545Component;
+// Control keys
+static constexpr const char *KEY_POWER = "A02";
+static constexpr const char *KEY_AUTO = "A03";
+static constexpr const char *KEY_SPEED = "A04";
+static constexpr const char *KEY_PLASMAWAVE = "A07";
+
+// Sensor keys
+static constexpr const char *KEY_FILTER_AGE = "A21";
+static constexpr const char *KEY_AQI = "S08";
+static constexpr const char *KEY_LIGHT = "S14";
+static constexpr const char *KEY_AQI_INDICATOR = "S07";
+
+class WinixC545Fan;
 
 // Define an alias for map of device states
 using WinixStateMap = std::map<const std::string, uint16_t>;
-
-class WinixC545Switch : public switch_::Switch, public Parented<WinixC545Component> {
- public:
-  WinixC545Switch(const std::string &key, uint8_t on_value = 1, uint8_t off_value = 0) : key_(key), on_value_(on_value), off_value_(off_value) {}
-
- protected:
-  void write_state(bool state) override;
-
-  const std::string key_;
-  const uint8_t on_value_;
-  const uint8_t off_value_;
-};
-
-class WinixC545PlasmawaveSwitch : public WinixC545Switch {
- public:
-  WinixC545PlasmawaveSwitch() : WinixC545Switch("A07") {}
-};
-
-class WinixC545AutoSwitch : public WinixC545Switch {
- public:
-  WinixC545AutoSwitch() : WinixC545Switch("A03", 1, 2) {}
-};
-
-class WinixC545SleepSwitch : public WinixC545Switch {
- public:
-  // Sleep switch operates on fan speed, switch to low when turned off
-  WinixC545SleepSwitch() : WinixC545Switch("A04", 6, 1) {}
-};
-
-class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
- public:
-  fan::FanTraits get_traits() override {
-    // Only support speed control with 4 levels: Low, Med, High, Turbo
-    return fan::FanTraits(false, true, false, 4);
-  }
-
-  void update_state(const WinixStateMap &);
-
- protected:
-  void control(const fan::FanCall &call) override;
-};
 
 class WinixC545Component : public uart::UARTDevice, public Component {
 #ifdef USE_SENSOR
@@ -110,6 +81,47 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 #ifdef USE_FAN
   WinixC545Fan *fan_{nullptr};
 #endif
+};
+
+class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
+ public:
+  fan::FanTraits get_traits() override {
+    // Only support speed control with 4 levels: Low, Med, High, Turbo
+    return fan::FanTraits(false, true, false, 4);
+  }
+
+  void update_state(const WinixStateMap &);
+
+ protected:
+  void control(const fan::FanCall &call) override;
+};
+
+class WinixC545Switch : public switch_::Switch, public Parented<WinixC545Component> {
+ public:
+  WinixC545Switch(const std::string &key, uint8_t on_value = 1, uint8_t off_value = 0) : key_(key), on_value_(on_value), off_value_(off_value) {}
+
+ protected:
+  void write_state(bool state) override;
+
+  const std::string key_;
+  const uint8_t on_value_;
+  const uint8_t off_value_;
+};
+
+class WinixC545PlasmawaveSwitch : public WinixC545Switch {
+ public:
+  WinixC545PlasmawaveSwitch() : WinixC545Switch(KEY_PLASMAWAVE) {}
+};
+
+class WinixC545AutoSwitch : public WinixC545Switch {
+ public:
+  WinixC545AutoSwitch() : WinixC545Switch(KEY_AUTO, 1, 2) {}
+};
+
+class WinixC545SleepSwitch : public WinixC545Switch {
+ public:
+  // Sleep switch operates on fan speed, switch to low when turned off
+  WinixC545SleepSwitch() : WinixC545Switch(KEY_SPEED, 6, 1) {}
 };
 
 }  // namespace winix_c545

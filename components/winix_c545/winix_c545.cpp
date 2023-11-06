@@ -78,7 +78,7 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
     const uint16_t value = state.second;
 
     // Handle sensor states and other non-fan states
-    if (key == "S07" && this->aqi_indicator_text_sensor_ != nullptr) {
+    if (key == KEY_AQI_INDICATOR && this->aqi_indicator_text_sensor_ != nullptr) {
       // AQI LED indicator
       switch (value)
       {
@@ -86,22 +86,22 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
         case 2: this->aqi_indicator_text_sensor_->publish_state("Fair"); break;
         case 3: this->aqi_indicator_text_sensor_->publish_state("Poor"); break;
       }
-    } else if (key == "S08" && this->aqi_sensor_ != nullptr) {
+    } else if (key == KEY_AQI && this->aqi_sensor_ != nullptr) {
       // AQI
       this->aqi_sensor_->publish_state(value);
-    } else if (key == "S14" && this->light_sensor_ != nullptr) {
+    } else if (key == KEY_LIGHT && this->light_sensor_ != nullptr) {
       // Light
       this->light_sensor_->publish_state(value);
-    } else if (key == "A21" && this->filter_age_sensor_ != nullptr) {
+    } else if (key == KEY_FILTER_AGE && this->filter_age_sensor_ != nullptr) {
       // Filter age
       this->filter_age_sensor_->publish_state(value);
-    } else if (key == "A07") {
+    } else if (key == KEY_PLASMAWAVE) {
       // Plasmawave
       this->plasmawave_switch_->publish_state(value == 1);
-    } else if (key == "A03") {
+    } else if (key == KEY_AUTO) {
       // Auto
       this->auto_switch_->publish_state(value == 1);
-    } else if (key == "A04") {
+    } else if (key == KEY_SPEED) {
       // Sleep is a speed value
       this->sleep_switch_->publish_state(value == 6);
     }
@@ -263,9 +263,6 @@ void WinixC545Component::setup() {
   //   this->write_state_();
   // }
 
-  // TODO need to create switches first?? Switches
-  // this->plasmawave_switch_.add_on_state_callback(this->on_plasmawave_state_);
-
   // Indicate device is ready
   // TODO base on wifi state?
   this->write_sentence_("DEVICEREADY");
@@ -287,10 +284,10 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
     const uint16_t value = state.second;
 
     // Handle fan states
-    if (key == "A02") {
+    if (key == KEY_POWER) {
       // Power on/off
       this->state = value == 1 ? true : false;
-    } else if (key == "A04") {
+    } else if (key == KEY_SPEED) {
       // Speed
       if (value == 5)  // Turbo
         this->speed = 4;
@@ -310,13 +307,13 @@ void WinixC545Fan::control(const fan::FanCall &call) {
   if (call.get_state().has_value() && this->state != *call.get_state()) {
     // State has changed
     this->state = *call.get_state();
-    states.emplace("A02", state ? 1 : 0);
+    states.emplace(KEY_POWER, state ? 1 : 0);
   }
 
   if (call.get_speed().has_value() && this->speed != *call.get_speed()) {
     // Speed has changed
     this->speed = *call.get_speed();
-    states.emplace("A04", this->speed == 4 ? 5 : this->speed);
+    states.emplace(KEY_SPEED, this->speed == 4 ? 5 : this->speed);
   }
 
   this->parent_->write_state(states);
