@@ -239,8 +239,7 @@ bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
 void WinixC545Component::loop() {
   static char buffer[MAX_LINE_LENGTH];
 
-  // TODO check available() against a min size?
-  if (!this->available()) return;
+  if (this->available() < RX_PREFIX.size()) return;
 
   while (this->available() > 0) {
     char data = this->read();
