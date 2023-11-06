@@ -20,17 +20,22 @@ void WinixC545Component::write_sentence_(const std::string &sentence) {
 }
 
 void WinixC545Component::write_state(const WinixStateMap &states) {
+  constexpr uint32_t BUFFER_SIZE = 16;
+
   // Nothing to do if empty
   if (states.empty())
     return;
 
   std::string sentence = "AWS_RECV:A211 12 {";
 
+  // Reserve storage for each possible state
+  sentence.reserve(states.size() * BUFFER_SIZE);
+
   for (const auto &state : states) {
     const std::string &key = state.first;
     const uint16_t value = state.second;
 
-    char buffer[16];
+    char buffer[BUFFER_SIZE];
     snprintf(buffer, sizeof(buffer), "\"%s\":\"%d\",", key.c_str(), value);
 
     sentence.append(buffer);
