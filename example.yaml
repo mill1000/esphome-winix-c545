@@ -1,0 +1,41 @@
+external_components:
+  # Pull from Github
+  - source: github://mill1000/esphome-winix-c545@main
+    components: [winix_c545]
+  # # Pull from local folder
+  # - source: components
+  #   components: [winix_c545]
+
+uart:
+  - tx_pin: 26
+    rx_pin: 25
+    baud_rate: 115200
+
+winix_c545:
+
+fan:
+  - platform: winix_c545
+    name: Winix C545 Air Purifier
+
+sensor:
+  - platform: winix_c545
+    filter_age:
+      name: Filter Age
+    aqi:
+      name: AQI
+    light:
+      name: Light Intensity
+
+text_sensor:
+  - platform: winix_c545
+    aqi_indicator:
+    name: AQI Indicator
+
+switch:
+  - platform: winix_c545
+    plasmawave:
+      name: Plasmawave
+    auto:
+      name: Auto
+    sleep:
+      name: Sleep
