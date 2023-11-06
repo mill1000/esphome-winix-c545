@@ -286,7 +286,6 @@ void WinixC545Component::setup() {
   // Indicate device is ready
   // TODO base on wifi state?
   this->write_sentence_("DEVICEREADY");
-  this->write_sentence_("AWS_IND:CONNECT OK");
   // Some subset of these may be needed too
   // *ICT*ASSOCIATED:0
   // *ICT*IPALLOCATED:10.100.1.250 255.255.255.0 10.100.1.1 10.100.1.6
