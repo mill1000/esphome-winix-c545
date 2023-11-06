@@ -118,8 +118,8 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
       ESP_LOGI(TAG, "State update: %s", sentence);
 
       // Create a modifiable copy of the message payload for tokenization
-      char payload[MAX_LINE_LENGTH] = {0};
-      strncpy(payload, sentence + strlen("AWS_SEND=A2XX {"), MAX_LINE_LENGTH);
+      char payload[MAX_LINE_LENGTH];
+      strcpy(payload, sentence + strlen("AWS_SEND=A2XX {"));
 
       // Construct map to hold updates
       WinixStateMap states;
