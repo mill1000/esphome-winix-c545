@@ -30,7 +30,7 @@ void WinixC545Component::write_state(const WinixStateMap &states) {
     const std::string &key = state.first;
     const uint16_t value = state.second;
 
-    char buffer[32] = {0};
+    char buffer[16];
     snprintf(buffer, sizeof(buffer), "\"%s\":\"%d\",", key.c_str(), value);
 
     sentence += std::string(buffer);
