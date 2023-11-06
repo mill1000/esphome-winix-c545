@@ -71,7 +71,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   const std::string RX_PREFIX{"AT*ICT*"};
   const std::string TX_PREFIX{"*ICT*"};
 
-  static constexpr uint32_t MAX_LINE_LENGTH = 255;
+  static constexpr uint32_t MAX_LINE_LENGTH = 128;
 
   enum class HandshakeState {
     Reset,
