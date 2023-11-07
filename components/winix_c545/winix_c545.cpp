@@ -315,6 +315,7 @@ void WinixC545Component::loop() {
 
     // Line received, parse it
     this->parse_sentence_(buffer);
+    return;
   }
 }
 
