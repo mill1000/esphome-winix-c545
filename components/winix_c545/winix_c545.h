@@ -1,7 +1,7 @@
 #pragma once
 
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
@@ -29,14 +29,28 @@ static constexpr const char *KEY_PLASMAWAVE = "A07";
 
 // Sensor keys
 static constexpr const char *KEY_FILTER_AGE = "A21";
+static constexpr const char *KEY_AQI_INDICATOR = "S07";
 static constexpr const char *KEY_AQI = "S08";
 static constexpr const char *KEY_LIGHT = "S14";
-static constexpr const char *KEY_AQI_INDICATOR = "S07";
 
-class WinixC545Fan;
+enum class StateKey {
+  // Control keys
+  Power,
+  Auto,
+  Speed,
+  Plasmawave,
+
+  // Sensor keys
+  FilterAge,
+  AQIIndicator,
+  AQI,
+  Light
+};
 
 // Define an alias for map of device states
-using WinixStateMap = std::map<const std::string, uint16_t>;
+using WinixStateMap = std::unordered_map<StateKey, uint16_t>;
+
+class WinixC545Fan;
 
 class WinixC545Component : public uart::UARTDevice, public Component {
 #ifdef USE_SENSOR
@@ -72,6 +86,9 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   const std::string TX_PREFIX{"*ICT*"};
 
   static constexpr uint32_t MAX_LINE_LENGTH = 128;
+
+  static const std::unordered_map<std::string, StateKey> ENUM_KEY_MAP;
+  static const std::unordered_map<StateKey, std::string> STRING_KEY_MAP;
 
   enum class HandshakeState {
     Reset,
@@ -114,30 +131,30 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
 
 class WinixC545Switch : public switch_::Switch, public Parented<WinixC545Component> {
  public:
-  WinixC545Switch(const std::string &key, uint8_t on_value = 1, uint8_t off_value = 0) : key_(key), on_value_(on_value), off_value_(off_value) {}
+  WinixC545Switch(StateKey key, uint8_t on_value = 1, uint8_t off_value = 0) : key_(key), on_value_(on_value), off_value_(off_value) {}
 
  protected:
   void write_state(bool state) override;
 
-  const std::string key_;
+  const StateKey key_;
   const uint8_t on_value_;
   const uint8_t off_value_;
 };
 
 class WinixC545PlasmawaveSwitch : public WinixC545Switch {
  public:
-  WinixC545PlasmawaveSwitch() : WinixC545Switch(KEY_PLASMAWAVE) {}
+  WinixC545PlasmawaveSwitch() : WinixC545Switch(StateKey::Plasmawave) {}
 };
 
 class WinixC545AutoSwitch : public WinixC545Switch {
  public:
-  WinixC545AutoSwitch() : WinixC545Switch(KEY_AUTO, 1, 2) {}
+  WinixC545AutoSwitch() : WinixC545Switch(StateKey::Auto, 1, 2) {}
 };
 
 class WinixC545SleepSwitch : public WinixC545Switch {
  public:
   // Sleep switch operates on fan speed, switch to low when turned off
-  WinixC545SleepSwitch() : WinixC545Switch(KEY_SPEED, 6, 1) {}
+  WinixC545SleepSwitch() : WinixC545Switch(StateKey::Speed, 6, 1) {}
 };
 
 }  // namespace winix_c545

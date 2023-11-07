@@ -1,7 +1,8 @@
 
 #include "winix_c545.h"
 
-#include <map>
+#include <string>
+#include <unordered_map>
 
 #include "esphome/core/log.h"
 
@@ -9,6 +10,25 @@ namespace esphome {
 namespace winix_c545 {
 
 static const char *const TAG = "winix_c545";
+
+const std::unordered_map<std::string, StateKey> WinixC545Component::ENUM_KEY_MAP = {
+    {KEY_POWER, StateKey::Power},
+    {KEY_AUTO, StateKey::Auto},
+    {KEY_SPEED, StateKey::Speed},
+    {KEY_PLASMAWAVE, StateKey::Plasmawave},
+
+    {KEY_FILTER_AGE, StateKey::FilterAge},
+    {KEY_AQI_INDICATOR, StateKey::AQIIndicator},
+    {KEY_AQI, StateKey::AQI},
+    {KEY_LIGHT, StateKey::Light},
+};
+
+const std::unordered_map<StateKey, std::string> WinixC545Component::STRING_KEY_MAP = {
+    {StateKey::Power, KEY_POWER},
+    {StateKey::Auto, KEY_AUTO},
+    {StateKey::Speed, KEY_SPEED},
+    {StateKey::Plasmawave, KEY_PLASMAWAVE},
+};
 
 void WinixC545Component::write_sentence_(const std::string &sentence) {
   ESP_LOGD(TAG, "Sending sentence: %s%s", TX_PREFIX.c_str(), sentence.c_str());
@@ -32,11 +52,17 @@ void WinixC545Component::write_state(const WinixStateMap &states) {
   sentence.reserve(states.size() * BUFFER_SIZE);
 
   for (const auto &state : states) {
-    const std::string &key = state.first;
+    const StateKey key = state.first;
     const uint16_t value = state.second;
 
+    // Check if key is supported
+    if (STRING_KEY_MAP.count(key) == 0) {
+      ESP_LOGW(TAG, "Unsupported key: %d", key);
+      continue;
+    }
+
     char buffer[BUFFER_SIZE];
-    snprintf(buffer, sizeof(buffer), "\"%s\":\"%d\",", key.c_str(), value);
+    snprintf(buffer, sizeof(buffer), "\"%s\":\"%d\",", STRING_KEY_MAP.at(key).c_str(), value);
 
     sentence.append(buffer);
   }
@@ -53,11 +79,11 @@ void WinixC545Component::publish_state_() {
     return;
 
   for (const auto &state : this->states_) {
-    const std::string &key = state.first;
+    const StateKey key = state.first;
     const uint16_t value = state.second;
 
     // Handle sensor states and other non-fan states
-    if (key == KEY_AQI_INDICATOR && this->aqi_indicator_text_sensor_ != nullptr) {
+    if (key == StateKey::AQIIndicator && this->aqi_indicator_text_sensor_ != nullptr) {
       // AQI LED indicator
       switch (value) {
         case 1:
@@ -70,29 +96,29 @@ void WinixC545Component::publish_state_() {
           this->aqi_indicator_text_sensor_->publish_state("Poor");
           break;
       }
-    } else if (key == KEY_AQI && this->aqi_sensor_ != nullptr) {
+    } else if (key == StateKey::AQI && this->aqi_sensor_ != nullptr) {
       // AQI
       if (value != this->aqi_sensor_->raw_state)
         this->aqi_sensor_->publish_state(value);
-    } else if (key == KEY_LIGHT && this->light_sensor_ != nullptr) {
+    } else if (key == StateKey::Light && this->light_sensor_ != nullptr) {
       // Light
       if (value != this->light_sensor_->raw_state)
         this->light_sensor_->publish_state(value);
-    } else if (key == KEY_FILTER_AGE && this->filter_age_sensor_ != nullptr) {
+    } else if (key == StateKey::FilterAge && this->filter_age_sensor_ != nullptr) {
       // Filter age
       if (value != this->filter_age_sensor_->raw_state)
         this->filter_age_sensor_->publish_state(value);
-    } else if (key == KEY_PLASMAWAVE && this->plasmawave_switch_ != nullptr) {
+    } else if (key == StateKey::Plasmawave && this->plasmawave_switch_ != nullptr) {
       // Plasmawave
       bool state = value == 1;
       if (state != this->plasmawave_switch_->state)
         this->plasmawave_switch_->publish_state(state);
-    } else if (key == KEY_AUTO && this->auto_switch_ != nullptr) {
+    } else if (key == StateKey::Auto && this->auto_switch_ != nullptr) {
       // Auto
       bool state = value == 1;
       if (state != this->auto_switch_->state)
         this->auto_switch_->publish_state(state);
-    } else if (key == KEY_SPEED && this->sleep_switch_ != nullptr) {
+    } else if (key == StateKey::Speed && this->sleep_switch_ != nullptr) {
       // Sleep is a speed value
       bool state = value == 6;
       if (state != this->sleep_switch_->state)
@@ -149,8 +175,11 @@ void WinixC545Component::parse_aws_sentence_(char *sentence) {
           return;
         }
 
-        // Add token to map
-        this->states_[std::string(key)] = value;
+        // Add state if supported
+        if (ENUM_KEY_MAP.count(std::string(key))) {
+          StateKey state_key = ENUM_KEY_MAP.at(std::string(key));
+          this->states_[state_key] = value;
+        }
 
         token = strtok(NULL, ",");
       }
@@ -382,11 +411,11 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
 
   bool publish = false;
   for (const auto &state : states) {
-    const std::string &key = state.first;
+    const StateKey key = state.first;
     const uint16_t value = state.second;
 
     // Handle fan states
-    if (key == KEY_POWER) {
+    if (key == StateKey::Power) {
       // Power on/off
       bool state = value == 1 ? true : false;
       if (state != this->state) {
@@ -394,13 +423,13 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
         this->state = state;
         publish = true;
       }
-    } else if (key == KEY_SPEED) {
+    } else if (key == StateKey::Speed) {
       uint8_t speed = 0;
       // Speed
       if (value == 5)  // Turbo
         speed = 4;
       else if (value == 6)  // Sleep
-        speed = 0; // TODO?
+        speed = 0;          // TODO?
       else
         speed = value;
 
@@ -422,13 +451,13 @@ void WinixC545Fan::control(const fan::FanCall &call) {
   if (call.get_state().has_value() && this->state != *call.get_state()) {
     // State has changed
     this->state = *call.get_state();
-    states.emplace(KEY_POWER, state ? 1 : 0);
+    states.emplace(StateKey::Power, state ? 1 : 0);
   }
 
   if (call.get_speed().has_value() && this->speed != *call.get_speed()) {
     // Speed has changed
     this->speed = *call.get_speed();
-    states.emplace(KEY_SPEED, this->speed == 4 ? 5 : this->speed);
+    states.emplace(StateKey::Speed, this->speed == 4 ? 5 : this->speed);
   }
 
   this->parent_->write_state(states);
