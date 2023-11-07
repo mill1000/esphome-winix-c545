@@ -86,8 +86,8 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 
   void update_handshake_state_();
   bool readline_(char, char *, int);
-  void parse_sentence_(const char *);
-  void parse_aws_sentence_(const char *);
+  void parse_sentence_(char *);
+  void parse_aws_sentence_(char *);
   void update_state_(const WinixStateMap &);
   void write_sentence_(const std::string &);
 

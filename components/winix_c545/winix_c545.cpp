@@ -94,7 +94,7 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
   }
 }
 
-void WinixC545Component::parse_aws_sentence_(const char *sentence) {
+void WinixC545Component::parse_aws_sentence_(char *sentence) {
   uint16_t api_code = 0;
   if (sscanf(sentence, "AWS_SEND=A%3d", &api_code) != 1) {
     ESP_LOGE(TAG, "Failed to extract API code from sentence: %s", sentence);
@@ -121,15 +121,14 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
     {
       ESP_LOGI(TAG, "State update: %s", sentence);
 
-      // Create a modifiable copy of the message payload for tokenization
-      char payload[MAX_LINE_LENGTH];
-      strcpy(payload, sentence + strlen("AWS_SEND=A2XX {"));
+      // Advance sentence to first token
+      sentence += strlen("AWS_SEND=A2XX {");
 
       // Construct map to hold updates
       WinixStateMap states;
 
       // Parse each token into a KV pair
-      char *token = strtok(payload, ",");
+      char *token = strtok(sentence, ",");
       while (token != NULL) {
         char key[4] = {0};
         uint32_t value = 0;
@@ -174,7 +173,7 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
   }
 }
 
-void WinixC545Component::parse_sentence_(const char *sentence) {
+void WinixC545Component::parse_sentence_(char *sentence) {
   ESP_LOGD(TAG, "Received sentence: %s", sentence);
 
   // Example sentence formats
