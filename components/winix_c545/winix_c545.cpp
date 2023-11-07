@@ -99,6 +99,19 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
 
   bool valid = false;
   switch (api_code) {
+    case 102:  // Wifi disconnect
+    {
+      // Acknowledge the message
+      this->write_sentence_("AWS_SEND:OK");
+      this->write_sentence_("AWS_IND:SEND OK");
+      this->write_sentence_("AWS_IND:DISCONNECTED");
+
+      // Reset handshake state
+      this->handshake_state_ = HandshakeState::Reset;
+      this->last_handshake_event_ = millis();
+      return;
+    }
+
     case 210:  // Overall device state
     case 220:  // Sensor update
     {
@@ -129,7 +142,7 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
 
       // Update internal state
       this->update_state_(states);
-
+      valid = true;
       break;
     }
 
@@ -150,6 +163,10 @@ void WinixC545Component::parse_aws_sentence_(const char *sentence) {
     // Acknowledge the message
     this->write_sentence_("AWS_SEND:OK");
     this->write_sentence_("AWS_IND:SEND OK");
+
+    // If a valid packet was received, force connected state
+    this->handshake_state_ = HandshakeState::Connected;
+    this->last_handshake_event_ = millis();
   }
 }
 
@@ -180,6 +197,9 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
 
   // Handle MCU_READY message
   if (strncmp(sentence, "MCU_READY", strlen("MCU_READY")) == 0) {
+    this->handshake_state_ = HandshakeState::McuReady;
+    this->last_handshake_event_ = millis();
+
     ESP_LOGI(TAG, "MCU_READY");
     this->write_sentence_("MCU_READY:OK");
     return;
@@ -187,9 +207,11 @@ void WinixC545Component::parse_sentence_(const char *sentence) {
 
   // Handle MIB=32 message
   if (strncmp(sentence, "MIB=32", strlen("MIB=32")) == 0) {
+    this->handshake_state_ = HandshakeState::MIB;
+    this->last_handshake_event_ = millis();
+
     ESP_LOGI(TAG, "MIB:OK");
-    // 7595 is version of OEM wifi module
-    this->write_sentence_("MIB:OK 7595");
+    this->write_sentence_("MIB:OK 7595");  // 7595 is version of OEM wifi module
     return;
   }
 
@@ -238,8 +260,49 @@ bool WinixC545Component::readline_(char data, char *buffer, int max_length) {
   return false;
 }
 
+void WinixC545Component::update_handshake_state_() {
+  switch (this->handshake_state_) {
+    case HandshakeState::Connected:
+      // Protocol is connected, all good
+      return;
+
+    case HandshakeState::Reset:
+    case HandshakeState::DeviceReady: {
+      // If there was activity recently assume the handshake is in progress
+      if ((millis() - this->last_handshake_event_) < 10000)
+        return;
+
+      // Indicate device is ready to start handshake with MCU
+      this->handshake_state_ = HandshakeState::DeviceReady;
+      this->last_handshake_event_ = millis();
+
+      ESP_LOGI(TAG, "DEVICEREADY");
+      this->write_sentence_("DEVICEREADY");
+      break;
+    }
+
+    case HandshakeState::MIB: {
+      this->handshake_state_ = HandshakeState::Connected;
+      this->last_handshake_event_ = millis();
+
+      // Some subset of these may be needed
+      // *ICT*ASSOCIATED:0
+      // *ICT*IPALLOCATED:10.100.1.250 255.255.255.0 10.100.1.1 10.100.1.6
+      // *ICT*AWS_IND:MQTT OK
+      // *ICT*AWS_IND:SUBSCRIBE OK
+      // *ICT*AWS_IND:CONNECT OK
+      ESP_LOGI(TAG, "CONNECTED");
+      this->write_sentence_("AWS_IND:CONNECT OK");
+      break;
+    }
+  }
+}
+
 void WinixC545Component::loop() {
   static char buffer[MAX_LINE_LENGTH];
+
+  // Handle protocol handshake state
+  this->update_handshake_state_();
 
   if (this->available() < RX_PREFIX.size()) return;
 
@@ -285,15 +348,9 @@ void WinixC545Component::setup() {
   //   this->write_state_();
   // }
 
-  // Indicate device is ready
-  // TODO base on wifi state?
-  this->write_sentence_("DEVICEREADY");
-  // Some subset of these may be needed too
-  // *ICT*ASSOCIATED:0
-  // *ICT*IPALLOCATED:10.100.1.250 255.255.255.0 10.100.1.1 10.100.1.6
-  // *ICT*AWS_IND:MQTT OK
-  // *ICT*AWS_IND:SUBSCRIBE OK
-  // *ICT*AWS_IND:CONNECT OK
+  // Reset handshake
+  this->handshake_state_ = HandshakeState::Reset;
+  this->last_handshake_event_ = millis();
 }
 
 void WinixC545Fan::dump_config() {

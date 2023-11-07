@@ -72,6 +72,19 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   const std::string TX_PREFIX{"*ICT*"};
 
   static constexpr uint32_t MAX_LINE_LENGTH = 255;
+
+  enum class HandshakeState {
+    Reset,
+    DeviceReady,
+    MIB,
+    McuReady,
+    Connected,
+  };
+
+  HandshakeState handshake_state_{HandshakeState::Reset};
+  uint32_t last_handshake_event_ = 0;
+
+  void update_handshake_state_();
   bool readline_(char, char *, int);
   void parse_sentence_(const char *);
   void parse_aws_sentence_(const char *);
