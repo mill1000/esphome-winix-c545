@@ -83,46 +83,90 @@ void WinixC545Component::publish_state_() {
     const uint16_t value = state.second;
 
     // Handle sensor states and other non-fan states
-    if (key == StateKey::AQIIndicator && this->aqi_indicator_text_sensor_ != nullptr) {
-      // AQI LED indicator
-      switch (value) {
-        case 1:
-          this->aqi_indicator_text_sensor_->publish_state("Good");
-          break;
-        case 2:
-          this->aqi_indicator_text_sensor_->publish_state("Fair");
-          break;
-        case 3:
-          this->aqi_indicator_text_sensor_->publish_state("Poor");
-          break;
+    switch (key) {
+      case StateKey::AQIIndicator: {
+        // AQI LED indicator
+
+        if (this->aqi_indicator_text_sensor_ == nullptr)
+          continue;
+
+        switch (value) {
+          case 1:
+            this->aqi_indicator_text_sensor_->publish_state("Good");
+            break;
+          case 2:
+            this->aqi_indicator_text_sensor_->publish_state("Fair");
+            break;
+          case 3:
+            this->aqi_indicator_text_sensor_->publish_state("Poor");
+            break;
+        }
+
+        break;
       }
-    } else if (key == StateKey::AQI && this->aqi_sensor_ != nullptr) {
-      // AQI
-      if (value != this->aqi_sensor_->raw_state)
-        this->aqi_sensor_->publish_state(value);
-    } else if (key == StateKey::Light && this->light_sensor_ != nullptr) {
-      // Light
-      if (value != this->light_sensor_->raw_state)
-        this->light_sensor_->publish_state(value);
-    } else if (key == StateKey::FilterAge && this->filter_age_sensor_ != nullptr) {
-      // Filter age
-      if (value != this->filter_age_sensor_->raw_state)
-        this->filter_age_sensor_->publish_state(value);
-    } else if (key == StateKey::Plasmawave && this->plasmawave_switch_ != nullptr) {
-      // Plasmawave
-      bool state = value == 1;
-      if (state != this->plasmawave_switch_->state)
-        this->plasmawave_switch_->publish_state(state);
-    } else if (key == StateKey::Auto && this->auto_switch_ != nullptr) {
-      // Auto
-      bool state = value == 1;
-      if (state != this->auto_switch_->state)
-        this->auto_switch_->publish_state(state);
-    } else if (key == StateKey::Speed && this->sleep_switch_ != nullptr) {
-      // Sleep is a speed value
-      bool state = value == 6;
-      if (state != this->sleep_switch_->state)
-        this->sleep_switch_->publish_state(state);
+
+      case StateKey::AQI: {
+        // AQI
+        if (this->aqi_sensor_ == nullptr)
+          continue;
+
+        if (value != this->aqi_sensor_->raw_state)
+          this->aqi_sensor_->publish_state(value);
+        break;
+      }
+
+      case StateKey::Light: {
+        // Light
+        if (this->light_sensor_ == nullptr)
+          continue;
+
+        if (value != this->light_sensor_->raw_state)
+          this->light_sensor_->publish_state(value);
+        break;
+      }
+
+      case StateKey::FilterAge: {
+        // Filter age
+        if (this->filter_age_sensor_ == nullptr)
+          continue;
+
+        if (value != this->filter_age_sensor_->raw_state)
+          this->filter_age_sensor_->publish_state(value);
+        break;
+      }
+
+      case StateKey::Plasmawave: {
+        // Plasmawave
+        if (this->plasmawave_switch_ == nullptr)
+          continue;
+
+        bool state = value == 1;
+        if (state != this->plasmawave_switch_->state)
+          this->plasmawave_switch_->publish_state(state);
+        break;
+      }
+
+      case StateKey::Auto: {
+        // Auto
+        if (this->auto_switch_ == nullptr)
+          continue;
+
+        bool state = value == 1;
+        if (state != this->auto_switch_->state)
+          this->auto_switch_->publish_state(state);
+        break;
+      }
+
+      case StateKey::Speed: {
+        // Sleep is a speed value
+        if (this->sleep_switch_ == nullptr)
+          continue;
+
+        bool state = value == 6;
+        if (state != this->sleep_switch_->state)
+          this->sleep_switch_->publish_state(state);
+        break;
+      }
     }
   }
 
@@ -415,28 +459,39 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
     const uint16_t value = state.second;
 
     // Handle fan states
-    if (key == StateKey::Power) {
-      // Power on/off
-      bool state = value == 1 ? true : false;
-      if (state != this->state) {
+    switch (key) {
+      case StateKey::Power: {
+        // Power on/off
+        bool state = (value == 1) ? true : false;
+
+        if (state == this->state)
+          continue;
+
         // State has changed, publish
         this->state = state;
         publish = true;
-      }
-    } else if (key == StateKey::Speed) {
-      uint8_t speed = 0;
-      // Speed
-      if (value == 5)  // Turbo
-        speed = 4;
-      else if (value == 6)  // Sleep
-        speed = 0;          // TODO?
-      else
-        speed = value;
 
-      if (speed != this->speed) {
+        break;
+      }
+
+      case StateKey::Speed: {
+        // Speed
+        uint8_t speed = 0;
+        if (value == 5)  // Turbo
+          speed = 4;
+        else if (value == 6)  // Sleep
+          speed = 0;          // TODO?
+        else
+          speed = value;
+
+        if (speed == this->speed)
+          continue;
+
         // Speed has changed, publish
         this->speed = speed;
         publish = true;
+
+        break;
       }
     }
   }
