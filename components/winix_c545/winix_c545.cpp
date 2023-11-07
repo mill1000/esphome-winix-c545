@@ -72,13 +72,13 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
     } else if (key == KEY_FILTER_AGE && this->filter_age_sensor_ != nullptr) {
       // Filter age
       this->filter_age_sensor_->publish_state(value);
-    } else if (key == KEY_PLASMAWAVE) {
+    } else if (key == KEY_PLASMAWAVE && this->plasmawave_switch_ != nullptr) {
       // Plasmawave
       this->plasmawave_switch_->publish_state(value == 1);
-    } else if (key == KEY_AUTO) {
+    } else if (key == KEY_AUTO && this->auto_switch_ != nullptr) {
       // Auto
       this->auto_switch_->publish_state(value == 1);
-    } else if (key == KEY_SPEED) {
+    } else if (key == KEY_SPEED && this->sleep_switch_ != nullptr) {
       // Sleep is a speed value
       this->sleep_switch_->publish_state(value == 6);
     }
