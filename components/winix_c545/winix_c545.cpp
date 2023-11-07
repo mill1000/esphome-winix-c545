@@ -72,22 +72,31 @@ void WinixC545Component::publish_state_() {
       }
     } else if (key == KEY_AQI && this->aqi_sensor_ != nullptr) {
       // AQI
-      this->aqi_sensor_->publish_state(value);
+      if (value != this->aqi_sensor_->raw_state)
+        this->aqi_sensor_->publish_state(value);
     } else if (key == KEY_LIGHT && this->light_sensor_ != nullptr) {
       // Light
-      this->light_sensor_->publish_state(value);
+      if (value != this->light_sensor_->raw_state)
+        this->light_sensor_->publish_state(value);
     } else if (key == KEY_FILTER_AGE && this->filter_age_sensor_ != nullptr) {
       // Filter age
-      this->filter_age_sensor_->publish_state(value);
+      if (value != this->filter_age_sensor_->raw_state)
+        this->filter_age_sensor_->publish_state(value);
     } else if (key == KEY_PLASMAWAVE && this->plasmawave_switch_ != nullptr) {
       // Plasmawave
-      this->plasmawave_switch_->publish_state(value == 1);
+      bool state = value == 1;
+      if (state != this->plasmawave_switch_->state)
+        this->plasmawave_switch_->publish_state(state);
     } else if (key == KEY_AUTO && this->auto_switch_ != nullptr) {
       // Auto
-      this->auto_switch_->publish_state(value == 1);
+      bool state = value == 1;
+      if (state != this->auto_switch_->state)
+        this->auto_switch_->publish_state(state);
     } else if (key == KEY_SPEED && this->sleep_switch_ != nullptr) {
       // Sleep is a speed value
-      this->sleep_switch_->publish_state(value == 6);
+      bool state = value == 6;
+      if (state != this->sleep_switch_->state)
+        this->sleep_switch_->publish_state(state);
     }
   }
 
@@ -371,6 +380,7 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
   if (states.empty())
     return;
 
+  bool publish = false;
   for (const auto &state : states) {
     const std::string &key = state.first;
     const uint16_t value = state.second;
@@ -378,19 +388,32 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
     // Handle fan states
     if (key == KEY_POWER) {
       // Power on/off
-      this->state = value == 1 ? true : false;
+      bool state = value == 1 ? true : false;
+      if (state != this->state) {
+        // State has changed, publish
+        this->state = state;
+        publish = true;
+      }
     } else if (key == KEY_SPEED) {
+      uint8_t speed = 0;
       // Speed
       if (value == 5)  // Turbo
-        this->speed = 4;
+        speed = 4;
       else if (value == 6)  // Sleep
-        this->speed = 0;    // TODO?
+        speed = 0; // TODO?
       else
-        this->speed = value;
+        speed = value;
+
+      if (speed != this->speed) {
+        // Speed has changed, publish
+        this->speed = speed;
+        publish = true;
+      }
     }
   }
 
-  this->publish_state();
+  if (publish)
+    this->publish_state();
 }
 
 void WinixC545Fan::control(const fan::FanCall &call) {
