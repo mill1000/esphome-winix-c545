@@ -387,7 +387,7 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
 }
 
 void WinixC545Fan::control(const fan::FanCall &call) {
-  std::map<const std::string, uint16_t> states;
+  WinixStateMap states;
 
   if (call.get_state().has_value() && this->state != *call.get_state()) {
     // State has changed
@@ -406,7 +406,7 @@ void WinixC545Fan::control(const fan::FanCall &call) {
 }
 
 void WinixC545Switch::write_state(bool state) {
-  std::map<const std::string, uint16_t> states;
+  WinixStateMap states;
 
   if (state != this->state) {
     // State has changed
