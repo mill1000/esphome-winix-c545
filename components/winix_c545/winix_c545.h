@@ -29,6 +29,7 @@ static constexpr const char *KEY_PLASMAWAVE = "A07";
 
 // Sensor keys
 static constexpr const char *KEY_FILTER_AGE = "A21";
+static constexpr const char *KEY_FILTER_LIFETIME = "P01";
 static constexpr const char *KEY_AQI_INDICATOR = "S07";
 static constexpr const char *KEY_AQI = "S08";
 static constexpr const char *KEY_LIGHT = "S14";
@@ -42,6 +43,7 @@ enum class StateKey {
 
   // Sensor keys
   FilterAge,
+  FilterLifetime,
   AQIIndicator,
   AQI,
   Light
@@ -55,6 +57,7 @@ class WinixC545Fan;
 class WinixC545Component : public uart::UARTDevice, public Component {
 #ifdef USE_SENSOR
   SUB_SENSOR(filter_age)
+  SUB_SENSOR(filter_lifetime)
   SUB_SENSOR(aqi)
   SUB_SENSOR(light)
 #endif

@@ -2,7 +2,8 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import sensor
 from esphome.const import (DEVICE_CLASS_AQI, DEVICE_CLASS_DURATION,
-                           STATE_CLASS_MEASUREMENT, UNIT_EMPTY, UNIT_HOUR)
+                           ENTITY_CATEGORY_DIAGNOSTIC, STATE_CLASS_MEASUREMENT,
+                           UNIT_EMPTY, UNIT_HOUR)
 
 from . import CONF_WINIX_C545_ID, WinixC545Component
 
@@ -10,6 +11,7 @@ DEPENDENCIES = ["winix_c545"]
 
 CONF_AQI = "aqi"
 CONF_FILTER_AGE = "filter_age"
+CONF_FILTER_LIFETIME = "filter_lifetime"
 CONF_LIGHT = "light"
 
 CONFIG_SCHEMA = cv.Schema(
@@ -20,6 +22,14 @@ CONFIG_SCHEMA = cv.Schema(
             accuracy_decimals=0,
             device_class=DEVICE_CLASS_DURATION,
             state_class=STATE_CLASS_MEASUREMENT,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ),
+        cv.Optional(CONF_FILTER_LIFETIME): sensor.sensor_schema(
+            unit_of_measurement=UNIT_HOUR,
+            accuracy_decimals=0,
+            device_class=DEVICE_CLASS_DURATION,
+            state_class=STATE_CLASS_MEASUREMENT,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(CONF_AQI): sensor.sensor_schema(
             unit_of_measurement=UNIT_EMPTY,
@@ -42,6 +52,10 @@ async def to_code(config) -> None:
     if sensor_config := config.get(CONF_FILTER_AGE):
         sens = await sensor.new_sensor(sensor_config)
         cg.add(component.set_filter_age_sensor(sens))
+
+    if sensor_config := config.get(CONF_FILTER_LIFETIME):
+        sens = await sensor.new_sensor(sensor_config)
+        cg.add(component.set_filter_lifetime_sensor(sens))
 
     if sensor_config := config.get(CONF_AQI):
         sens = await sensor.new_sensor(sensor_config)
