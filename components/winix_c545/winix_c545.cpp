@@ -18,6 +18,7 @@ const std::unordered_map<std::string, StateKey> WinixC545Component::ENUM_KEY_MAP
     {KEY_PLASMAWAVE, StateKey::Plasmawave},
 
     {KEY_FILTER_AGE, StateKey::FilterAge},
+    {KEY_FILTER_LIFETIME, StateKey::FilterLifetime},
     {KEY_AQI_INDICATOR, StateKey::AQIIndicator},
     {KEY_AQI, StateKey::AQI},
     {KEY_LIGHT, StateKey::Light},
@@ -142,6 +143,16 @@ void WinixC545Component::publish_state_() {
         break;
       }
 
+      case StateKey::FilterLifetime: {
+        // Filter lifetime
+        if (this->filter_lifetime_sensor_ == nullptr)
+          continue;
+
+        if (value != this->filter_lifetime_sensor_->raw_state)
+          this->filter_lifetime_sensor_->publish_state(value);
+        break;
+      }
+
       case StateKey::Plasmawave: {
         // Plasmawave
         if (this->plasmawave_switch_ == nullptr)
@@ -210,6 +221,8 @@ void WinixC545Component::parse_aws_sentence_(char *sentence) {
 
     case 210:  // Overall device state
     case 220:  // Sensor update
+    case 230:  // Error code
+    case 240:  // Version information & filter lifetime
     {
       // Advance sentence to first token
       sentence += strlen("AWS_SEND=A2XX {");
@@ -233,14 +246,6 @@ void WinixC545Component::parse_aws_sentence_(char *sentence) {
         token = strtok(NULL, ",");
       }
 
-      valid = true;
-      break;
-    }
-
-    case 230:  // Error code
-    case 240:  // Version information
-    {
-      ESP_LOGI(TAG, "Misc update: %s", sentence);
       valid = true;
       break;
     }
@@ -422,6 +427,7 @@ void WinixC545Component::dump_config() {
 
 #ifdef USE_SENSOR
   LOG_SENSOR("  ", "Filter Age Sensor", this->filter_age_sensor_);
+  LOG_SENSOR("  ", "Filter Lifetime Sensor", this->filter_lifetime_sensor_);
   LOG_SENSOR("  ", "AQI Sensor", this->aqi_sensor_);
   LOG_SENSOR("  ", "Light Sensor", this->light_sensor_);
 #endif

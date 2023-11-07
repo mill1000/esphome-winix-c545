@@ -75,6 +75,8 @@ sensor:
   - platform: winix_c545
     filter_age:
       name: Filter Age
+    filter_lifetime:
+      name: Filter Lifetime
     aqi:
       name: AQI
     light:
