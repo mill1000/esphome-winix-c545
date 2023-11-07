@@ -211,8 +211,6 @@ void WinixC545Component::parse_aws_sentence_(char *sentence) {
     case 210:  // Overall device state
     case 220:  // Sensor update
     {
-      ESP_LOGI(TAG, "State update: %s", sentence);
-
       // Advance sentence to first token
       sentence += strlen("AWS_SEND=A2XX {");
 
