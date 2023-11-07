@@ -90,6 +90,13 @@ void WinixC545Component::publish_state_() {
         if (this->aqi_indicator_text_sensor_ == nullptr)
           continue;
 
+        // No change in raw indicator value
+        if (value == this->aqi_indicator_raw_value_)
+          continue;
+
+        // Save raw value for intelligent publishing of sensor
+        this->aqi_indicator_raw_value_ = value;
+
         switch (value) {
           case 1:
             this->aqi_indicator_text_sensor_->publish_state("Good");

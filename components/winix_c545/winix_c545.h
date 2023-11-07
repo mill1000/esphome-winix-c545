@@ -102,6 +102,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   uint32_t last_handshake_event_ = 0;
 
   WinixStateMap states_;
+  uint32_t aqi_indicator_raw_value_ = 0;
 
   void update_handshake_state_();
   bool readline_(char, char *, int);
