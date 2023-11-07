@@ -397,12 +397,15 @@ void WinixC545Component::loop() {
   // Publish states as needed
   this->publish_state_();
 
-  if (this->available() < RX_PREFIX.size()) return;
+  // Return if no data available
+  if (!this->available())
+    return;
 
+  // Read all available data until the first sentence is received
   while (this->available() > 0) {
-    char data = this->read();
-    bool found = this->readline_(data, buffer, MAX_LINE_LENGTH);
-    if (!found) continue;
+    bool found = this->readline_(this->read(), buffer, MAX_LINE_LENGTH);
+    if (!found)
+      continue;
 
     // Line received, parse it
     this->parse_sentence_(buffer);
