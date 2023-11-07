@@ -84,11 +84,13 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   HandshakeState handshake_state_{HandshakeState::Reset};
   uint32_t last_handshake_event_ = 0;
 
+  WinixStateMap states_;
+
   void update_handshake_state_();
   bool readline_(char, char *, int);
   void parse_sentence_(char *);
   void parse_aws_sentence_(char *);
-  void update_state_(const WinixStateMap &);
+  void publish_state_();
   void write_sentence_(const std::string &);
 
 #ifdef USE_FAN

@@ -48,8 +48,11 @@ void WinixC545Component::write_state(const WinixStateMap &states) {
   this->write_sentence_(sentence);
 }
 
-void WinixC545Component::update_state_(const WinixStateMap &states) {
-  for (const auto &state : states) {
+void WinixC545Component::publish_state_() {
+  if (this->states_.empty())
+    return;
+
+  for (const auto &state : this->states_) {
     const std::string &key = state.first;
     const uint16_t value = state.second;
 
@@ -90,8 +93,11 @@ void WinixC545Component::update_state_(const WinixStateMap &states) {
 
   // Pass states to underlying fan if it exists
   if (this->fan_ != nullptr) {
-    this->fan_->update_state(states);
+    this->fan_->update_state(this->states_);
   }
+
+  // All states published, clear contents
+  this->states_.clear();
 }
 
 void WinixC545Component::parse_aws_sentence_(char *sentence) {
@@ -124,9 +130,6 @@ void WinixC545Component::parse_aws_sentence_(char *sentence) {
       // Advance sentence to first token
       sentence += strlen("AWS_SEND=A2XX {");
 
-      // Construct map to hold updates
-      WinixStateMap states;
-
       // Parse each token into a KV pair
       char *token = strtok(sentence, ",");
       while (token != NULL) {
@@ -138,13 +141,11 @@ void WinixC545Component::parse_aws_sentence_(char *sentence) {
         }
 
         // Add token to map
-        states.emplace(std::string(key), value);
+        this->states_[std::string(key)] = value;
 
         token = strtok(NULL, ",");
       }
 
-      // Update internal state
-      this->update_state_(states);
       valid = true;
       break;
     }
@@ -305,6 +306,9 @@ void WinixC545Component::loop() {
 
   // Handle protocol handshake state
   this->update_handshake_state_();
+
+  // Publish states as needed
+  this->publish_state_();
 
   if (this->available() < RX_PREFIX.size()) return;
 
