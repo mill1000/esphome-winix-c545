@@ -4,7 +4,7 @@ An ESPHome component for the Winix C545 air purifier.
 ## Features
 - Full local control of the air purifier via Home Assistant or MQTT.
 - Physical device controls remain functional and changes are immediately reflected in the frontend. 
-- AQI, AQI indicator, filter age and light intensity sensors.
+- AQI, AQI indicator, filter age, filter lifetime and light intensity sensors.
 - Switches to control Plasmawave, Auto and Sleep modes.
 - Piggybacks on the OEM protocol with minimal hardware modifications required.
   - The OEM app can (theoretically) remain functional.
@@ -50,7 +50,16 @@ Using the photos as reference, connect the marked points to the ESP32 pins.
 | RX          | IO25        | WiFi UART Rx (MCU->WiFi) | 
 | 5V          | EXT_5V (5V) | 5 V Supply |
 | GND         | Ground      | Ground |
-| Q16         | N/A         | WiFi RESETn <br/> Optionally tie to ground to disable OEM WiFi |
+| Q16         | N/A         | WiFi RESETn <br/> Tie to ground to disable OEM WiFi |
+
+#### UART & Power Points
+![UART & Power Board Points](docs/winix_c545_uart_power.jpg)
+
+#### RESETn Point
+![RESETn Point](docs/winix_c545_resetn.jpg)
+
+#### Final Assembly
+![Final Assembly](docs/winix_c545_final.jpg)
 
 ### Configure ESPHome Node
 Use the [example configuration snippet](example.yaml) to configure your node.
