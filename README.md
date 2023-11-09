@@ -14,6 +14,7 @@ An ESPHome component for the Winix C545 air purifier.
   - ESP8266 may work but lacks a free [hardware UART](https://esphome.io/components/uart.html#hardware-uarts).
 - ESPHome 2023.10 or above
   - Older version may function but have not been tested.
+- A bi-directional logic level shifter.
 - Winix C545 Air Purifier
 - Soldering iron, solder and some small wire.
 
@@ -44,10 +45,12 @@ If your board differs, **STOP!** It is very likely you will damage the board if 
 ### Wiring
 Using the photos as reference, connect the marked points to the ESP32 pins.
 
+**NOTE: The host MCU uses 5 V logic so a level shifter is necessary to interface with the 3.3 V ESP32.**
+
 | Board Point | ESP32 Pin   | Notes |
 | ----------- | ----------- | ----- |
-| TX          | IO26        | WiFi UART Tx (WiFi->MCU) |
-| RX          | IO25        | WiFi UART Rx (MCU->WiFi) | 
+| TX          | IO26 (via level shifter) | WiFi UART Tx (WiFi->MCU) |
+| RX          | IO25 (via level shifter) | WiFi UART Rx (MCU->WiFi) | 
 | 5V          | EXT_5V (5V) | 5 V Supply |
 | GND         | Ground      | Ground |
 | Q16         | N/A         | WiFi RESETn <br/> Tie to ground to disable OEM WiFi |
@@ -59,7 +62,7 @@ Using the photos as reference, connect the marked points to the ESP32 pins.
 ![RESETn Point](docs/winix_c545_resetn.jpg)
 
 #### Final Assembly
-![Final Assembly](docs/winix_c545_final.jpg)
+TBD
 
 ### Configure ESPHome Node
 Use the [example configuration snippet](example.yaml) to configure your node.
