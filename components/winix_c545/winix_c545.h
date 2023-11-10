@@ -68,9 +68,6 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 
 #ifdef USE_SWITCH
   SUB_SWITCH(plasmawave)
-  // TODO the following belong as presets, not switches
-  SUB_SWITCH(auto)
-  SUB_SWITCH(sleep)
 #endif
 
  public:
@@ -121,16 +118,21 @@ class WinixC545Component : public uart::UARTDevice, public Component {
 
 class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
  public:
-  fan::FanTraits get_traits() override {
+  WinixC545Fan() {
     // Only support speed control with 4 levels: Low, Med, High, Turbo
-    return fan::FanTraits(false, true, false, 4);
+    this->traits_ = fan::FanTraits(false, true, false, 4);
+    // Add presets
+    this->traits_.set_supported_preset_modes({"Auto", "Sleep"});
   }
+
+  fan::FanTraits get_traits() override { return this->traits_; }
 
   void dump_config();
   void update_state(const WinixStateMap &);
 
  protected:
   void control(const fan::FanCall &call) override;
+  fan::FanTraits traits_;
 };
 
 class WinixC545Switch : public switch_::Switch, public Parented<WinixC545Component> {
@@ -148,17 +150,6 @@ class WinixC545Switch : public switch_::Switch, public Parented<WinixC545Compone
 class WinixC545PlasmawaveSwitch : public WinixC545Switch {
  public:
   WinixC545PlasmawaveSwitch() : WinixC545Switch(StateKey::Plasmawave) {}
-};
-
-class WinixC545AutoSwitch : public WinixC545Switch {
- public:
-  WinixC545AutoSwitch() : WinixC545Switch(StateKey::Auto, 1, 2) {}
-};
-
-class WinixC545SleepSwitch : public WinixC545Switch {
- public:
-  // Sleep switch operates on fan speed, switch to low when turned off
-  WinixC545SleepSwitch() : WinixC545Switch(StateKey::Speed, 6, 1) {}
 };
 
 }  // namespace winix_c545

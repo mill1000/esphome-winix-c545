@@ -163,28 +163,6 @@ void WinixC545Component::publish_state_() {
           this->plasmawave_switch_->publish_state(state);
         break;
       }
-
-      case StateKey::Auto: {
-        // Auto
-        if (this->auto_switch_ == nullptr)
-          continue;
-
-        bool state = value == 1;
-        if (state != this->auto_switch_->state)
-          this->auto_switch_->publish_state(state);
-        break;
-      }
-
-      case StateKey::Speed: {
-        // Sleep is a speed value
-        if (this->sleep_switch_ == nullptr)
-          continue;
-
-        bool state = value == 6;
-        if (state != this->sleep_switch_->state)
-          this->sleep_switch_->publish_state(state);
-        break;
-      }
     }
   }
 
@@ -438,8 +416,6 @@ void WinixC545Component::dump_config() {
 
 #ifdef USE_SWITCH
   LOG_SWITCH("  ", "Plasmawave Switch", this->plasmawave_switch_);
-  LOG_SWITCH("  ", "Auto Switch", this->auto_switch_);
-  LOG_SWITCH("  ", "Sleep Switch", this->sleep_switch_);
 #endif
 }
 
@@ -498,11 +474,28 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
         else
           speed = value;
 
-        if (speed == this->speed)
+        std::string preset_mode = (value == 6) ? "Sleep" : "";
+
+        if (speed == this->speed && preset_mode == this->preset_mode)
           continue;
 
         // Speed has changed, publish
         this->speed = speed;
+        this->preset_mode = preset_mode;
+        publish = true;
+
+        break;
+      }
+
+      case StateKey::Auto: {
+        // Auto
+        std::string preset_mode = (value == 1) ? "Auto" : "";
+
+        if (preset_mode == this->preset_mode)
+          continue;
+
+        // Preset has changed, publish
+        this->preset_mode = preset_mode;
         publish = true;
 
         break;
@@ -527,6 +520,16 @@ void WinixC545Fan::control(const fan::FanCall &call) {
     // Speed has changed
     this->speed = *call.get_speed();
     states.emplace(StateKey::Speed, this->speed == 4 ? 5 : this->speed);
+  }
+
+  if (this->preset_mode != call.get_preset_mode()) {
+    this->preset_mode = call.get_preset_mode();
+
+    // Update auto state
+    states.emplace(StateKey::Auto, (this->preset_mode == "Auto") ? 1 : 2);
+
+    // TOOD fallback to low spped?
+    states.emplace(StateKey::Speed, (this->preset_mode == "Sleep") ? 6 : 1);
   }
 
   this->parent_->write_state(states);
