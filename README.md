@@ -33,12 +33,12 @@ Identify the board and ensure it matches the information below.
 
 Board revision
 > Winix Inc  
-> C545 Display PCA  
+> C545 Display PBA  
 > Rev 1.0
 
 WiFi module
 > I&C Technology  
-> WFM60-SFP21
+> WFM60-SFP201
 
 If your board differs, **STOP!** It is very likely you will damage the board if you disregard this warning.
 
