@@ -12,7 +12,7 @@ An ESPHome component for the Winix C545 air purifier.
 ## Requirements
 - ESP32
   - ESP8266 may work but lacks a free [hardware UART](https://esphome.io/components/uart.html#hardware-uarts).
-  - A Raspberry Pi Pico W has also been used successfully.
+  - A [Raspberry Pi Pico W](docs/example_pico-w.yaml) has also been used successfully.
 - ESPHome 2023.10 or above
   - Older versions may function but have not been tested.
 - A bi-directional logic level shifter. 
