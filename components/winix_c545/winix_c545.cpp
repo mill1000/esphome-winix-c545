@@ -199,7 +199,7 @@ void WinixC545Component::publish_state_() {
 
 void WinixC545Component::parse_aws_sentence_(char *sentence) {
   uint16_t api_code = 0;
-  if (sscanf(sentence, "AWS_SEND=A%3d", &api_code) != 1) {
+  if (sscanf(sentence, "AWS_SEND=A%3hu", &api_code) != 1) {
     ESP_LOGE(TAG, "Failed to extract API code from sentence: %s", sentence);
     return;
   }
