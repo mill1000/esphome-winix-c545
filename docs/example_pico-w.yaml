@@ -1,0 +1,72 @@
+esphome:
+  name: pico-w-c545
+  friendly_name: pico-w-c545
+
+rp2040:
+  board: rpipicow
+  framework:
+    # Required until https://github.com/platformio/platform-raspberrypi/pull/36 is merged
+    platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "<key>"
+
+ota:
+  password: "<password>"
+
+wifi:
+  ssid: !secret <ssid_secret>
+  password: !secret <password_secret>
+
+  # Enable fallback hotspot in case wifi connection fails
+  ap:
+    ssid: "Pico-W-C545"
+    password: !secret <fallback_secret>
+
+external_components:
+  # Pull from Github
+  - source: github://mill1000/esphome-winix-c545@main
+    components: [winix_c545]
+
+# Enable logging
+logger:
+  level: DEBUG
+  hardware_uart: UART0
+
+uart:
+  tx_pin: 8 #(UART1 TX)
+  rx_pin: 9 #(UART1 RX)
+  baud_rate: 115200
+
+winix_c545:
+
+fan:
+  - platform: winix_c545
+    name: Winix C545 Air Purifier
+
+sensor:
+  - platform: winix_c545
+    filter_age:
+      name: Filter Age
+    filter_lifetime:
+      name: Filter Lifetime
+    aqi:
+      name: AQI
+    light:
+      name: Light Intensity
+
+text_sensor:
+  - platform: winix_c545
+    aqi_indicator:
+      name: AQI Indicator
+
+switch:
+  - platform: winix_c545
+    plasmawave:
+      name: Plasmawave
+    auto:
+      name: Auto
+    sleep:
+      name: Sleep
