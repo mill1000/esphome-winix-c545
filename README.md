@@ -106,8 +106,4 @@ switch:
   - platform: winix_c545
     plasmawave:
       name: Plasmawave
-    auto:
-      name: Auto
-    sleep:
-      name: Sleep
 ```
