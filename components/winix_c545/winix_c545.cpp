@@ -532,7 +532,8 @@ void WinixC545Fan::control(const fan::FanCall &call) {
     this->preset_mode = call.get_preset_mode();
 
     // Update auto mode
-    states.emplace(StateKey::Auto, (this->preset_mode == PRESET_AUTO) ? 1 : 2);
+    if (this->preset_mode == PRESET_AUTO)
+      states.emplace(StateKey::Auto, 1);
 
     // Set sleep mode
     if (this->preset_mode == PRESET_SLEEP)
