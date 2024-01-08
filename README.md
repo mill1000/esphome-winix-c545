@@ -5,7 +5,8 @@ An ESPHome component for the Winix C545 air purifier.
 - Full local control of the air purifier via Home Assistant or MQTT.
 - Physical device controls remain functional and changes are immediately reflected in the frontend. 
 - AQI, AQI indicator, filter age, filter lifetime and light intensity sensors.
-- Switches to control Plasmawave, Auto and Sleep modes.
+- Switch to control Plasmawave.
+- Auto and Sleep modes are implemented as fan presets.
 - Piggybacks on the OEM protocol with minimal hardware modifications required.
   - The OEM app can (theoretically) remain functional.
 
@@ -105,8 +106,4 @@ switch:
   - platform: winix_c545
     plasmawave:
       name: Plasmawave
-    auto:
-      name: Auto
-    sleep:
-      name: Sleep
 ```
