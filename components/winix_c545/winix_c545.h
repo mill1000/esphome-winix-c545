@@ -122,7 +122,7 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
     // Only support speed control with 4 levels: Low, Med, High, Turbo
     this->traits_ = fan::FanTraits(false, true, false, 4);
     // Add presets
-    this->traits_.set_supported_preset_modes({PRESET_NONE, PRESET_AUTO, PRESET_SLEEP});
+    this->traits_.set_supported_preset_modes({PRESET_AUTO, PRESET_SLEEP});
   }
 
   fan::FanTraits get_traits() override { return this->traits_; }
@@ -131,7 +131,7 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
   void update_state(const WinixStateMap &);
 
  protected:
-  const std::string PRESET_NONE{"None"};
+  const std::string PRESET_NONE{""};
   const std::string PRESET_SLEEP{"Sleep"};
   const std::string PRESET_AUTO{"Auto"};
 
