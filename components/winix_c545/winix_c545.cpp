@@ -368,6 +368,17 @@ void WinixC545Component::update_handshake_state_() {
       this->write_sentence_("AWS_IND:CONNECT OK");
       break;
     }
+
+    default: {
+      // If in an intermediate state and no activity occurs for a while reset the state machine
+      if ((millis() - this->last_handshake_event_) < 10000)
+        return;
+
+      // Reset handshake state
+      ESP_LOGW(TAG, "Handshake stalled in state %d. Restarting.", this->handshake_state_);
+      this->handshake_state_ = HandshakeState::Reset;
+      break;
+    }
   }
 }
 
