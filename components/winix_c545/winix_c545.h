@@ -93,9 +93,13 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   enum class HandshakeState {
     Reset,
     DeviceReady,
-    MIB,
     McuReady,
+    MIB,
     Connected,
+    ApReboot,
+    ApDeviceReady,
+    ApStart,
+    ApStop,
   };
 
   HandshakeState handshake_state_{HandshakeState::Reset};

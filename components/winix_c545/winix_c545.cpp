@@ -271,11 +271,20 @@ void WinixC545Component::parse_sentence_(char *sentence) {
 
   // Handle MCU_READY message
   if (strncmp(sentence, "MCU_READY", strlen("MCU_READY")) == 0) {
-    this->handshake_state_ = HandshakeState::McuReady;
-    this->last_handshake_event_ = millis();
-
     ESP_LOGI(TAG, "MCU_READY");
     this->write_sentence_("MCU_READY:OK");
+
+    if (this->handshake_state_ == HandshakeState::ApDeviceReady) {
+      this->handshake_state_ = HandshakeState::ApStart;
+      this->last_handshake_event_ = millis();
+
+      ESP_LOGI(TAG, "AP START");
+      this->write_sentence_("AP_STARTED:OK");
+    } else {
+      this->handshake_state_ = HandshakeState::McuReady;
+      this->last_handshake_event_ = millis();
+    }
+
     return;
   }
 
@@ -298,6 +307,9 @@ void WinixC545Component::parse_sentence_(char *sentence) {
 
   // Handle SMODE messages
   if (strncmp(sentence, "SMODE", strlen("SMODE")) == 0) {
+    this->handshake_state_ = HandshakeState::ApReboot;
+    this->last_handshake_event_ = millis();
+
     ESP_LOGI(TAG, "SMODE:OK");
     this->write_sentence_("SMODE:OK");
     return;
@@ -365,6 +377,30 @@ void WinixC545Component::update_handshake_state_() {
       // *ICT*AWS_IND:SUBSCRIBE OK
       // *ICT*AWS_IND:CONNECT OK
       ESP_LOGI(TAG, "CONNECTED");
+      this->write_sentence_("AWS_IND:CONNECT OK");
+      break;
+    }
+
+    case HandshakeState::ApReboot: {
+      // AP mode requested, pretend to reboot into AP
+      this->handshake_state_ = HandshakeState::ApDeviceReady;
+      this->last_handshake_event_ = millis();
+
+      ESP_LOGI(TAG, "AP DEVICEREADY");
+      this->write_sentence_("DEVICEREADY");
+      break;
+    }
+
+    case HandshakeState::ApStart: {
+      // Exit AP mode
+      this->handshake_state_ = HandshakeState::ApStop;
+      this->last_handshake_event_ = millis();
+
+      ESP_LOGI(TAG, "AP STOP");
+      this->write_sentence_("AP_STOPED:OK");
+      this->write_sentence_("ASSOCIATED:0");
+      // TODO could get real network info but I don't think it matters
+      this->write_sentence_("IPALLOCATED:10.100.1.250 255.255.255.0 10.100.1.1 10.100.1.6");
       this->write_sentence_("AWS_IND:CONNECT OK");
       break;
     }
