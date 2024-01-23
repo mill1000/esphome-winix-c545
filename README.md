@@ -45,6 +45,8 @@ WiFi module
 
 If your board differs, **STOP!** It is very likely you will damage the board if you disregard this warning.
 
+See the [wiki](https://github.com/mill1000/esphome-winix-c545/wiki) for an alternate board design.
+
 ### Wiring
 Using the photos as reference, connect the marked points to the ESP32 pins.
 
