@@ -21,12 +21,31 @@ sensor:
   - platform: winix_c545
     filter_age:
       name: Filter Age
+      id: filter_age
+      on_value:
+        then:
+          - component.update: filter_remaining
     filter_lifetime:
       name: Filter Lifetime
+      id: filter_lifetime
+      on_value:
+        then:
+          - component.update: filter_remaining
     aqi:
       name: AQI
     light:
       name: Light Intensity
+
+  - platform: template
+    name: Filter Remaining
+    id: filter_remaining
+    update_interval: never
+    device_class: ""
+    entity_category: "diagnostic"
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    lambda: |-
+      return 100 * (1 - (id(filter_age).state / id(filter_lifetime).state));
 
 text_sensor:
   - platform: winix_c545
