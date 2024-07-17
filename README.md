@@ -70,7 +70,8 @@ Using the photos as reference, connect the marked points to the ESP32 pins.
 ![Final Assembly](docs/winix_c545_final.jpg)
 
 ### Configure ESPHome Node
-Use the [example configuration snippet](example.yaml) to configure your node.
+See this [configuration snippet](example.yaml) for a more complete example or use the minimal configuration below.
+
 ```yaml
 external_components:
   # Pull from Github

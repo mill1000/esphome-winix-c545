@@ -15,7 +15,12 @@ winix_c545:
 
 fan:
   - platform: winix_c545
-    name: Winix C545 Air Purifier
+    name: None # Use friendly name of device
+
+globals:
+  - id: filter_lifetime_value
+    type: int
+    restore_value: yes
 
 sensor:
   - platform: winix_c545
@@ -25,27 +30,43 @@ sensor:
       on_value:
         then:
           - component.update: filter_remaining
+
     filter_lifetime:
-      name: Filter Lifetime
-      id: filter_lifetime
+      id: raw_filter_lifetime
+      internal: true
       on_value:
         then:
-          - component.update: filter_remaining
+          - lambda: |-
+              id(filter_lifetime_value) = x;
+              id(filter_lifetime_sensor).update();
     aqi:
       name: AQI
     light:
       name: Light Intensity
 
   - platform: template
+    name: Filter Lifetime
+    id: filter_lifetime_sensor
+    device_class: duration
+    entity_category: diagnostic
+    unit_of_measurement: h
+    accuracy_decimals: 0
+    lambda: |-
+      auto value = id(filter_lifetime_value);
+      return (value == 0) ? NAN : value;
+    on_value:
+      then:
+        - component.update: filter_remaining
+
+  - platform: template
     name: Filter Remaining
     id: filter_remaining
-    update_interval: never
     device_class: ""
-    entity_category: "diagnostic"
+    entity_category: diagnostic
     unit_of_measurement: "%"
     accuracy_decimals: 0
     lambda: |-
-      return 100 * (1 - (id(filter_age).state / id(filter_lifetime).state));
+      return 100 * (1 - (id(filter_age).state / id(filter_lifetime_sensor).state));
 
 text_sensor:
   - platform: winix_c545
