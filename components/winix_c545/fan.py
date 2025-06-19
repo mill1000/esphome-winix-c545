@@ -10,7 +10,8 @@ DEPENDENCIES = ["winix_c545"]
 WinixC545Fan = winix_c545_ns.class_("WinixC545Fan", fan.Fan, cg.Component)
 
 CONFIG_SCHEMA = (
-    fan.FAN_SCHEMA.extend(
+    fan.fan_schema(WinixC545Fan)
+    .extend(
         {
             cv.GenerateID(CONF_WINIX_C545_ID): cv.use_id(WinixC545Component),
             cv.GenerateID(CONF_ID): cv.declare_id(WinixC545Fan),
