@@ -171,8 +171,7 @@ void WinixC545Component::publish_state_() {
     this->fan_->update_state(this->states_);
 
     // Publish the fan speed sensor if configured
-    if (this->fan_speed_sensor_ != nullptr)
-    {
+    if (this->fan_speed_sensor_ != nullptr) {
       auto value = this->fan_->speed;
       if (value != this->fan_speed_sensor_->raw_state)
         this->fan_speed_sensor_->publish_state(value);
