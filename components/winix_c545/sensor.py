@@ -13,6 +13,7 @@ CONF_AQI = "aqi"
 CONF_FILTER_AGE = "filter_age"
 CONF_FILTER_LIFETIME = "filter_lifetime"
 CONF_LIGHT = "light"
+CONF_FAN_SPEED = "fan_speed"
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -41,6 +42,11 @@ CONFIG_SCHEMA = cv.Schema(
             unit_of_measurement=UNIT_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_FAN_SPEED): sensor.sensor_schema(
+            unit_of_measurement=UNIT_EMPTY,
+            accuracy_decimals=0,
+            state_class=STATE_CLASS_MEASUREMENT,
         )
     }
 )
@@ -64,3 +70,7 @@ async def to_code(config) -> None:
     if sensor_config := config.get(CONF_LIGHT):
         sens = await sensor.new_sensor(sensor_config)
         cg.add(component.set_light_sensor(sens))
+
+    if sensor_config := config.get(CONF_FAN_SPEED):
+        sens = await sensor.new_sensor(sensor_config)
+        cg.add(component.set_fan_speed_sensor(sens))
