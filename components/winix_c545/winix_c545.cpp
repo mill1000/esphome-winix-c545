@@ -462,7 +462,7 @@ void WinixC545Component::dump_config() {
   LOG_SENSOR("  ", "Filter Lifetime Sensor", this->filter_lifetime_sensor_);
   LOG_SENSOR("  ", "AQI Sensor", this->aqi_sensor_);
   LOG_SENSOR("  ", "Light Sensor", this->light_sensor_);
-  LOG_SNESOR("  ", "Fan Speed Sensor", this->fan_speed_sensor_);
+  LOG_SENSOR("  ", "Fan Speed Sensor", this->fan_speed_sensor_);
 #endif
 
 #ifdef USE_TEXT_SENSOR
