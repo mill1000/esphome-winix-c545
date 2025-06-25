@@ -43,6 +43,8 @@ sensor:
       name: AQI
     light:
       name: Light Intensity
+    fan_speed:
+      name: Fan Speed
 
   - platform: template
     name: Filter Lifetime

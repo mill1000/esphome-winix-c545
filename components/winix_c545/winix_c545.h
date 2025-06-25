@@ -60,6 +60,7 @@ class WinixC545Component : public uart::UARTDevice, public Component {
   SUB_SENSOR(filter_lifetime)
   SUB_SENSOR(aqi)
   SUB_SENSOR(light)
+  SUB_SENSOR(fan_speed)
 #endif
 
 #ifdef USE_TEXT_SENSOR

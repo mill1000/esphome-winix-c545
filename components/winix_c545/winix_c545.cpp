@@ -169,6 +169,13 @@ void WinixC545Component::publish_state_() {
   // Pass states to underlying fan if it exists
   if (this->fan_ != nullptr) {
     this->fan_->update_state(this->states_);
+
+    // Publish the fan speed sensor if configured
+    if (this->fan_speed_sensor_ != nullptr) {
+      auto value = this->fan_->speed;
+      if (value != this->fan_speed_sensor_->raw_state)
+        this->fan_speed_sensor_->publish_state(value);
+    }
   }
 
   // All states published, clear contents
@@ -455,6 +462,7 @@ void WinixC545Component::dump_config() {
   LOG_SENSOR("  ", "Filter Lifetime Sensor", this->filter_lifetime_sensor_);
   LOG_SENSOR("  ", "AQI Sensor", this->aqi_sensor_);
   LOG_SENSOR("  ", "Light Sensor", this->light_sensor_);
+  LOG_SENSOR("  ", "Fan Speed Sensor", this->fan_speed_sensor_);
 #endif
 
 #ifdef USE_TEXT_SENSOR
