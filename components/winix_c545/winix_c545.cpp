@@ -536,8 +536,8 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
         this->speed = speed;
 
         // Set preset mode to Sleep if speed indicates sleep and Auto is not enabled
-        if (this->preset_mode != PRESET_AUTO)
-          this->preset_mode = (value == 6) ? PRESET_SLEEP : PRESET_NONE;
+        if (!this->presets_equal_(this->get_preset_mode(), PRESET_AUTO))
+          this->set_preset_mode_((value == 6) ? PRESET_SLEEP : PRESET_NONE);
 
         publish = true;
 
@@ -546,17 +546,18 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
 
       case StateKey::Auto: {
         // Auto
-        std::string preset_mode = this->preset_mode;
+        const char *preset_mode = this->get_preset_mode();
+        const char *new_preset_mode = preset_mode;
         if (value == 1)
-          preset_mode = PRESET_AUTO;
-        else if (this->preset_mode == PRESET_AUTO)
-          preset_mode = PRESET_NONE;
+          new_preset_mode = PRESET_AUTO;
+        else if (this->presets_equal_(preset_mode, PRESET_AUTO))
+          new_preset_mode = PRESET_NONE;
 
-        if (preset_mode == this->preset_mode)
+        if (new_preset_mode == preset_mode)
           continue;
 
         // Preset has changed, publish
-        this->preset_mode = preset_mode;
+        this->set_preset_mode_(new_preset_mode);
         publish = true;
 
         break;
@@ -583,15 +584,16 @@ void WinixC545Fan::control(const fan::FanCall &call) {
     states.emplace(StateKey::Speed, this->speed == 4 ? 5 : this->speed);
   }
 
-  if (this->preset_mode != call.get_preset_mode()) {
-    this->preset_mode = call.get_preset_mode();
+  const char *new_preset_mode = call.get_preset_mode();
+  if (!this->presets_equal_(new_preset_mode, this->get_preset_mode())) {
+    this->set_preset_mode_(new_preset_mode);
 
     // Update auto mode
-    if (this->preset_mode == PRESET_AUTO)
+    if (this->presets_equal_(new_preset_mode, PRESET_AUTO))
       states.emplace(StateKey::Auto, 1);
 
     // Set sleep mode
-    if (this->preset_mode == PRESET_SLEEP)
+    if (this->presets_equal_(new_preset_mode, PRESET_SLEEP))
       states.emplace(StateKey::Speed, 6);
   }
 
