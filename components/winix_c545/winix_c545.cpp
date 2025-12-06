@@ -225,7 +225,7 @@ void WinixC545Component::parse_aws_sentence_(char *sentence) {
         // Add state if supported
         if (ENUM_KEY_MAP.count(std::string(key))) {
           StateKey state_key = ENUM_KEY_MAP.at(std::string(key));
-          this->states_[state_key] = value;
+          this->states_.emplace_back(state_key, value);
         }
 
         token = strtok(NULL, ",");
@@ -575,13 +575,13 @@ void WinixC545Fan::control(const fan::FanCall &call) {
   if (call.get_state().has_value() && this->state != *call.get_state()) {
     // State has changed
     this->state = *call.get_state();
-    states.emplace(StateKey::Power, state ? 1 : 0);
+    states.emplace_back(StateKey::Power, state ? 1 : 0);
   }
 
   if (call.get_speed().has_value() && this->speed != *call.get_speed()) {
     // Speed has changed
     this->speed = *call.get_speed();
-    states.emplace(StateKey::Speed, this->speed == 4 ? 5 : this->speed);
+    states.emplace_back(StateKey::Speed, this->speed == 4 ? 5 : this->speed);
   }
 
   const char *new_preset_mode = call.get_preset_mode();
@@ -590,11 +590,11 @@ void WinixC545Fan::control(const fan::FanCall &call) {
 
     // Update auto mode
     if (this->presets_equal_(new_preset_mode, PRESET_AUTO))
-      states.emplace(StateKey::Auto, 1);
+      states.emplace_back(StateKey::Auto, 1);
 
     // Set sleep mode
     if (this->presets_equal_(new_preset_mode, PRESET_SLEEP))
-      states.emplace(StateKey::Speed, 6);
+      states.emplace_back(StateKey::Speed, 6);
   }
 
   this->parent_->write_state(states);
@@ -606,7 +606,7 @@ void WinixC545Switch::write_state(bool state) {
 
   if (state != this->state) {
     // State has changed
-    states.emplace(this->key_, state ? this->on_value_ : this->off_value_);
+    states.emplace_back(this->key_, state ? this->on_value_ : this->off_value_);
   }
 
   this->parent_->write_state(states);
