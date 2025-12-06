@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
@@ -50,7 +51,7 @@ enum class StateKey {
 };
 
 // Define an alias for map of device states
-using WinixStateMap = std::unordered_map<StateKey, uint16_t>;
+using WinixStateMap = std::vector<std::pair<StateKey, uint16_t>>;
 
 class WinixC545Fan;
 
