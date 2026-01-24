@@ -536,7 +536,7 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
         this->speed = speed;
 
         // Set preset mode to Sleep if speed indicates sleep and Auto is not enabled
-        if (!this->presets_equal_(this->get_preset_mode(), PRESET_AUTO))
+        if (this->get_preset_mode() != PRESET_AUTO)
           this->set_preset_mode_((value == 6) ? PRESET_SLEEP : PRESET_NONE);
 
         publish = true;
@@ -546,11 +546,11 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
 
       case StateKey::Auto: {
         // Auto
-        const char *preset_mode = this->get_preset_mode();
-        const char *new_preset_mode = preset_mode;
+        const esphome::StringRef preset_mode = this->get_preset_mode();
+        std::string new_preset_mode = preset_mode;
         if (value == 1)
           new_preset_mode = PRESET_AUTO;
-        else if (this->presets_equal_(preset_mode, PRESET_AUTO))
+        else if (preset_mode == PRESET_AUTO)
           new_preset_mode = PRESET_NONE;
 
         if (new_preset_mode == preset_mode)
@@ -584,16 +584,20 @@ void WinixC545Fan::control(const fan::FanCall &call) {
     states.emplace_back(StateKey::Speed, this->speed == 4 ? 5 : this->speed);
   }
 
-  const char *new_preset_mode = call.get_preset_mode();
-  if (!this->presets_equal_(new_preset_mode, this->get_preset_mode())) {
-    this->set_preset_mode_(new_preset_mode);
+  // Save current preset mode
+  const esphome::StringRef old_preset_mode = this->get_preset_mode();
 
+  // Apply new preset mode
+  this->apply_preset_mode_(call);
+
+  // Update states if preset changes
+  if (this->get_preset_mode() != old_preset_mode) {
     // Update auto mode
-    if (this->presets_equal_(new_preset_mode, PRESET_AUTO))
+    if (this->get_preset_mode() == PRESET_AUTO)
       states.emplace_back(StateKey::Auto, 1);
 
     // Set sleep mode
-    if (this->presets_equal_(new_preset_mode, PRESET_SLEEP))
+    if (this->get_preset_mode() == PRESET_SLEEP)
       states.emplace_back(StateKey::Speed, 6);
   }
 
