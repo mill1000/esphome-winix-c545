@@ -525,7 +525,7 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
         if (value == 5)  // Turbo
           speed = 4;
         else if (value == 6)  // Sleep
-          speed = 0;          // TODO?
+          speed = 0;
         else
           speed = value;
 
@@ -546,18 +546,17 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
 
       case StateKey::Auto: {
         // Auto
-        const esphome::StringRef preset_mode = this->get_preset_mode();
-        std::string new_preset_mode = preset_mode;
+        esphome::StringRef preset_mode = this->get_preset_mode();
         if (value == 1)
-          new_preset_mode = PRESET_AUTO;
+          preset_mode = esphome::StringRef(PRESET_AUTO);
         else if (preset_mode == PRESET_AUTO)
-          new_preset_mode = PRESET_NONE;
+          preset_mode = esphome::StringRef(PRESET_NONE);  // Disable auto mode only if we're in auto mode
 
-        if (new_preset_mode == preset_mode)
+        if (preset_mode == this->get_preset_mode())
           continue;
 
         // Preset has changed, publish
-        this->set_preset_mode_(new_preset_mode);
+        this->set_preset_mode_(preset_mode);
         publish = true;
 
         break;
@@ -572,33 +571,29 @@ void WinixC545Fan::update_state(const WinixStateMap &states) {
 void WinixC545Fan::control(const fan::FanCall &call) {
   WinixStateMap states;
 
-  if (call.get_state().has_value() && this->state != *call.get_state()) {
+  if (call.get_state().has_value()) {
     // State has changed
     this->state = *call.get_state();
     states.emplace_back(StateKey::Power, state ? 1 : 0);
   }
 
-  if (call.get_speed().has_value() && this->speed != *call.get_speed()) {
+  if (call.get_speed().has_value()) {
     // Speed has changed
     this->speed = *call.get_speed();
     states.emplace_back(StateKey::Speed, this->speed == 4 ? 5 : this->speed);
   }
 
-  // Save current preset mode
-  const esphome::StringRef old_preset_mode = this->get_preset_mode();
+  if (call.has_preset_mode()) {
+    const esphome::StringRef preset_mode = esphome::StringRef(call.get_preset_mode());
+    this->set_preset_mode_(preset_mode);
 
-  // Apply new preset mode
-  this->apply_preset_mode_(call);
-
-  // Update states if preset changes
-  if (this->get_preset_mode() != old_preset_mode) {
-    // Update auto mode
-    if (this->get_preset_mode() == PRESET_AUTO)
-      states.emplace_back(StateKey::Auto, 1);
-
-    // Set sleep mode
-    if (this->get_preset_mode() == PRESET_SLEEP)
+    // Send states according to current preset mode
+    if (preset_mode == PRESET_SLEEP)
       states.emplace_back(StateKey::Speed, 6);
+    else if (preset_mode == PRESET_AUTO)
+      states.emplace_back(StateKey::Auto, 1);
+    else
+      states.emplace_back(StateKey::Auto, 2);
   }
 
   this->parent_->write_state(states);
