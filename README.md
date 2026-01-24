@@ -3,7 +3,7 @@ An ESPHome component for the Winix C545 air purifier.
 
 ## Features
 - Full local control of the air purifier via Home Assistant or MQTT.
-- Physical device controls remain functional and changes are immediately reflected in the frontend. 
+- Physical device controls remain functional and changes are immediately reflected in the frontend.
 - AQI, AQI indicator, filter age, filter lifetime, light intensity and fan speed sensors.
 - Switch to control Plasmawave.
 - Auto and Sleep modes are implemented as fan presets.
@@ -16,13 +16,13 @@ An ESPHome component for the Winix C545 air purifier.
   - A [Raspberry Pi Pico W](docs/example_pico-w.yaml) has also been used successfully.
 - ESPHome 2026.1 or above
   - Older versions may function but have not been tested.
-- A bi-directional logic level shifter. 
+- A bi-directional logic level shifter.
   - Pictured here is the Adafruit TXB0104 Bi-Directional Level Shifter.
 - Winix C545 Air Purifier
 - Soldering iron, solder and some small wire.
 
 ## Setup
-In this setup a ESP32-PICO-KIT V4.1 was used due to its availability and small size. 
+In this setup a ESP32-PICO-KIT V4.1 was used due to its availability and small size.
 
 ### Disassemble The Device
 Disassemble the air purifier and remove the control board.
@@ -35,13 +35,17 @@ Disassemble the air purifier and remove the control board.
 Identify the board and ensure it matches the information below.
 
 Board revision
-> Winix Inc  
-> C545 Display PBA  
-> Rev 1.0
+```
+Winix Inc
+C545 Display PBA
+Rev 1.0
+```
 
 WiFi module
-> I&C Technology  
-> WFM60-SFP201
+```
+I&C Technology
+WFM60-SFP201
+```
 
 If your board differs, **STOP!** It is very likely you will damage the board if you disregard this warning.
 
@@ -55,7 +59,7 @@ Using the photos as reference, connect the marked points to the ESP32 pins.
 | Board Point | ESP32 Pin   | Notes |
 | ----------- | ----------- | ----- |
 | TX          | IO26 (via level shifter) | WiFi UART Tx (WiFi->MCU) |
-| RX          | IO25 (via level shifter) | WiFi UART Rx (MCU->WiFi) | 
+| RX          | IO25 (via level shifter) | WiFi UART Rx (MCU->WiFi) |
 | 5V          | EXT_5V (5V) | 5 V Supply |
 | GND         | Ground      | Ground |
 | Q16         | N/A         | WiFi RESETn <br/> Tie to ground to disable OEM WiFi |
