@@ -589,10 +589,9 @@ void WinixC545Fan::control(const fan::FanCall &call) {
 
   // Apply new preset mode
   this->apply_preset_mode_(call);
-  
+
   // Update states if preset changes
-  if (this->get_preset_mode() != old_preset_mode)
-  {
+  if (this->get_preset_mode() != old_preset_mode) {
     // Update auto mode
     if (this->get_preset_mode() == PRESET_AUTO)
       states.emplace_back(StateKey::Auto, 1);
