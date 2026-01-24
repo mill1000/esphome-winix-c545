@@ -141,13 +141,6 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
   static constexpr const char *const PRESET_SLEEP = "Sleep";
   static constexpr const char *const PRESET_AUTO = "Auto";
 
-  bool presets_equal_(const char *preset_a, const char *preset_b) {
-    if (preset_a == nullptr || preset_b == nullptr)
-      return false;
-
-    return strcmp(preset_a, preset_b) == 0;
-  }
-
   void control(const fan::FanCall &call) override;
   fan::FanTraits traits_;
 };
