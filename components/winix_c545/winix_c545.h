@@ -128,7 +128,7 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
     // Only support speed control with 4 levels: Low, Med, High, Turbo
     this->traits_ = fan::FanTraits(false, true, false, 4);
     // Add presets
-    this->traits_.set_supported_preset_modes({PRESET_AUTO, PRESET_SLEEP});
+    this->set_supported_preset_modes({PRESET_AUTO, PRESET_SLEEP});
   }
 
   fan::FanTraits get_traits() override { return this->traits_; }
