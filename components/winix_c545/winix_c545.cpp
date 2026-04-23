@@ -118,7 +118,7 @@ void WinixC545Component::publish_state_() {
         if (this->aqi_sensor_ == nullptr)
           continue;
 
-        if (value != this->aqi_sensor_->raw_state)
+        if (value != this->aqi_sensor_->get_raw_state())
           this->aqi_sensor_->publish_state(value);
         break;
       }
@@ -128,7 +128,7 @@ void WinixC545Component::publish_state_() {
         if (this->light_sensor_ == nullptr)
           continue;
 
-        if (value != this->light_sensor_->raw_state)
+        if (value != this->light_sensor_->get_raw_state())
           this->light_sensor_->publish_state(value);
         break;
       }
@@ -138,7 +138,7 @@ void WinixC545Component::publish_state_() {
         if (this->filter_age_sensor_ == nullptr)
           continue;
 
-        if (value != this->filter_age_sensor_->raw_state)
+        if (value != this->filter_age_sensor_->get_raw_state())
           this->filter_age_sensor_->publish_state(value);
         break;
       }
@@ -148,7 +148,7 @@ void WinixC545Component::publish_state_() {
         if (this->filter_lifetime_sensor_ == nullptr)
           continue;
 
-        if (value != this->filter_lifetime_sensor_->raw_state)
+        if (value != this->filter_lifetime_sensor_->get_raw_state())
           this->filter_lifetime_sensor_->publish_state(value);
         break;
       }
@@ -173,7 +173,7 @@ void WinixC545Component::publish_state_() {
     // Publish the fan speed sensor if configured
     if (this->fan_speed_sensor_ != nullptr) {
       auto value = this->fan_->speed;
-      if (value != this->fan_speed_sensor_->raw_state)
+      if (value != this->fan_speed_sensor_->get_raw_state())
         this->fan_speed_sensor_->publish_state(value);
     }
   }
