@@ -131,7 +131,10 @@ class WinixC545Fan : public fan::Fan, public Parented<WinixC545Component> {
     this->set_supported_preset_modes({PRESET_AUTO, PRESET_SLEEP});
   }
 
-  fan::FanTraits get_traits() override { return this->traits_; }
+  fan::FanTraits get_traits() override {
+    this->wire_preset_modes_(this->traits_);
+    return this->traits_;
+  }
 
   void dump_config();
   void update_state(const WinixStateMap &);
