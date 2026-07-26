@@ -75,7 +75,7 @@ Using the photos as reference, connect the marked points to the ESP32 pins.
 ![Final Assembly](docs/winix_c545_final.jpg)
 
 #### Enclosure
-I designed a 3D-printable enclosure for the Pico 2 W + level shifter, if you want a
+3D-printable enclosure (designed by @1Emerson1) for the Pico 2 W + level shifter, if you want a
 clean way to house this instead of loose wires: https://makerworld.com/en/models/3097250-pico-2-w-adafruit-txb0104-enclosure#profileId-3490780
 
 ### Configure ESPHome Node
