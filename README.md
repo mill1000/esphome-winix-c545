@@ -14,6 +14,7 @@ An ESPHome component for the Winix C545 air purifier.
 - ESP32
   - ESP8266 may work but lacks a free [hardware UART](https://esphome.io/components/uart.html#hardware-uarts).
   - A [Raspberry Pi Pico W](docs/example_pico-w.yaml) has also been used successfully.
+  - A [Raspberry Pi Pico 2 W](docs/example_pico-2w.yaml) (RP2350) also works, same wiring.
 - ESPHome 2026.1 or above
   - Older versions may function but have not been tested.
 - A bi-directional logic level shifter.
@@ -72,6 +73,10 @@ Using the photos as reference, connect the marked points to the ESP32 pins.
 
 #### Final Assembly
 ![Final Assembly](docs/winix_c545_final.jpg)
+
+#### Enclosure
+I designed a 3D-printable enclosure for the Pico 2 W + level shifter, if you want a
+clean way to house this instead of loose wires: https://makerworld.com/en/models/3097250-pico-2-w-adafruit-txb0104-enclosure#profileId-3490780
 
 ### Configure ESPHome Node
 See this [configuration snippet](example.yaml) for a more complete example or use the minimal configuration below.
