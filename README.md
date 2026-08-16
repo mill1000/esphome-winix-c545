@@ -15,8 +15,9 @@ An ESPHome component for the Winix C545 air purifier.
   - ESP8266 may work but lacks a free [hardware UART](https://esphome.io/components/uart.html#hardware-uarts).
   - A [Raspberry Pi Pico W](docs/example_pico-w.yaml) has also been used successfully.
   - A [Raspberry Pi Pico 2 W](docs/example_pico-2w.yaml) (RP2350) also works, same wiring.
-- ESPHome 2026.1 or above
-  - Older versions may function but have not been tested.
+- ESPHome 2026.7 or above
+  - The component calls `Fan::wire_preset_modes_()`, which was added in 2026.7. Earlier
+    releases will fail to compile.
 - A bi-directional logic level shifter.
   - Pictured here is the Adafruit TXB0104 Bi-Directional Level Shifter.
 - Winix C545 Air Purifier
