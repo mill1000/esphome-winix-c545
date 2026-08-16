@@ -2,11 +2,8 @@ esphome:
   name: pico-2w-c545
   friendly_name: pico-2w-c545
 
-rp2040:
+rp2:
   board: rpipico2w
-  framework:
-    # Required until https://github.com/platformio/platform-raspberrypi/pull/36 is merged
-    platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git
 
 # Enable Home Assistant API
 api:
